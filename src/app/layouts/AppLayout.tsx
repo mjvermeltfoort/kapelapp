@@ -9,12 +9,24 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
 }
 
+function isStandaloneMode() {
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean }
+  return window.matchMedia('(display-mode: standalone)').matches || navigatorWithStandalone.standalone === true
+}
+
+function isAndroidChrome() {
+  const userAgent = window.navigator.userAgent.toLowerCase()
+  return userAgent.includes('android') && userAgent.includes('chrome') && !userAgent.includes('wv')
+}
+
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [isStandalone, setIsStandalone] = useState(false)
+  const [showInstallHint, setShowInstallHint] = useState(false)
 
   const navigation = useMemo(() => {
     const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' }>
@@ -34,21 +46,37 @@ export function AppLayout() {
   const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances
 
   useEffect(() => {
+    setIsStandalone(isStandaloneMode())
+    setShowInstallHint(isAndroidChrome() && !isStandaloneMode())
+
     function handleBeforeInstallPrompt(event: Event) {
       event.preventDefault()
       setInstallPrompt(event as BeforeInstallPromptEvent)
+      setShowInstallHint(false)
     }
 
     function handleAppInstalled() {
       setInstallPrompt(null)
+      setIsStandalone(true)
+      setShowInstallHint(false)
+    }
+
+    function handleDisplayModeChange() {
+      const standalone = isStandaloneMode()
+      setIsStandalone(standalone)
+      if (standalone) {
+        setShowInstallHint(false)
+      }
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     window.addEventListener('appinstalled', handleAppInstalled)
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', handleDisplayModeChange)
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
+      window.matchMedia('(display-mode: standalone)').removeEventListener('change', handleDisplayModeChange)
     }
   }, [])
 
@@ -120,7 +148,7 @@ export function AppLayout() {
         </div>
 
         <div className="user-block">
-          {installPrompt ? (
+          {installPrompt && !isStandalone ? (
             <button
               type="button"
               className="ghost-button app-install-button"
@@ -128,6 +156,9 @@ export function AppLayout() {
             >
               Installeer app
             </button>
+          ) : null}
+          {showInstallHint ? (
+            <span className="install-hint">Open Chrome-menu en kies ‘App installeren’</span>
           ) : null}
           {showCreatePerformanceAction ? (
             <Link to="/performances/new" className="nav-icon-link" aria-label="Nieuw optreden" title="Nieuw optreden">

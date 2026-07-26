@@ -130,6 +130,12 @@
   white-space: nowrap;
 }
 
+.install-hint {
+  color: #4f627a;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 .nav-icon-link {
   display: inline-flex;
   align-items: center;
@@ -214,6 +220,13 @@
     order: 1;
     width: 100%;
     justify-content: center;
+  }
+
+  .install-hint {
+    order: 1;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
   }
 
   .app-main {

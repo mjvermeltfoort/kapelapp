@@ -57,9 +57,10 @@ export function PerformancesPage() {
   }
 
   return (
-    <PageCard title="Optredens">
-      <div className="page-toolbar">
-        {canManagePerformances ? (
+    <PageCard
+      title="Optredens"
+      headerAction={
+        canManagePerformances ? (
           <Link
             to="/performances/new"
             className="icon-link-button"
@@ -69,8 +70,9 @@ export function PerformancesPage() {
             <Icon name="add" className="nav-icon" />
             <span className="sr-only">Nieuw optreden</span>
           </Link>
-        ) : null}
-      </div>
+        ) : null
+      }
+    >
 
       {performancesQuery.isLoading ? <p>Optredens worden geladen…</p> : null}
       {responsesQuery.isLoading && performancesQuery.data?.length ? (
