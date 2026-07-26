@@ -4,7 +4,7 @@ import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 
 export function ProfilePage() {
-  const { profile, saveProfile, user } = useAuth()
+  const { profile, saveProfile, signOut, user } = useAuth()
   const { activeMembership, leaveActiveBand, refreshBands, saveMyInstrument } = useBand()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [instrument, setInstrument] = useState(activeMembership?.instrument ?? '')
@@ -129,6 +129,10 @@ export function ProfilePage() {
             <dd>{user?.id ?? 'Onbekend'}</dd>
           </div>
         </dl>
+
+        <button type="button" className="ghost-button" onClick={() => void signOut()}>
+          Uitloggen
+        </button>
       </PageCard>
 
       <PageCard title="Actieve kapel">

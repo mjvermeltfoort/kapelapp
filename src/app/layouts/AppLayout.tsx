@@ -1,19 +1,17 @@
 import { useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
-import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
 
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { profile, user, signOut } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
 
   const navigation = useMemo(() => {
-    const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' | 'profile' }>
+    const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' }>
 
     if (activeMembership) {
       items.push({ to: '/performances', label: 'Optredens', icon: 'performances' })
@@ -22,8 +20,6 @@ export function AppLayout() {
         items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
       }
     }
-
-    items.push({ to: '/profile', label: 'Profiel', icon: 'profile' })
 
     return items
   }, [activeMembership])
@@ -94,10 +90,9 @@ export function AppLayout() {
               <Icon name="add" className="nav-icon" />
             </Link>
           ) : null}
-          <span className="user-name">{profile?.display_name ?? user?.email ?? 'Onbekende gebruiker'}</span>
-          <button type="button" className="ghost-button" onClick={() => void signOut()}>
-            Uitloggen
-          </button>
+          <Link to="/profile" className="nav-icon-link" aria-label="Profiel" title="Profiel">
+            <Icon name="profile" className="nav-icon" />
+          </Link>
         </div>
       </header>
 

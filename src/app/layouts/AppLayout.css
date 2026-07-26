@@ -142,11 +142,6 @@
   background: #eef4ff;
 }
 
-.user-name {
-  color: #4f627a;
-  font-size: 0.95rem;
-}
-
 .app-nav {
   display: flex;
   gap: 0.5rem;
@@ -208,13 +203,6 @@
 
   .user-block {
     justify-content: space-between;
-  }
-
-  .user-name {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .app-main {
