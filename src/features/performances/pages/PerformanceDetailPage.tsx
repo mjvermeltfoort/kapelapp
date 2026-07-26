@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
+import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
+import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
 import { getPerformance } from '../api/performances'
 
 export function PerformanceDetailPage() {
@@ -12,6 +14,12 @@ export function PerformanceDetailPage() {
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
     queryFn: async () => getPerformance(performanceId ?? ''),
+    enabled: Boolean(performanceId && activeMembership?.band.id),
+  })
+
+  const responseQuery = useQuery({
+    queryKey: ['my-performance-response', performanceId],
+    queryFn: async () => getMyPerformanceResponse(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
   })
 
@@ -85,6 +93,26 @@ export function PerformanceDetailPage() {
           <dd>{performance.description ?? 'Geen omschrijving'}</dd>
         </div>
       </dl>
+
+      <PageCard
+        title="Jouw aanwezigheid"
+        description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht."
+      >
+        {responseQuery.isLoading ? <p>Reactie wordt geladen…</p> : null}
+        {responseQuery.error instanceof Error ? <p role="alert">{responseQuery.error.message}</p> : null}
+
+        <PerformanceResponseForm
+          currentResponse={responseQuery.data ?? null}
+          onSubmit={async (input) => {
+            await upsertMyPerformanceResponse({
+              performanceId: performance.id,
+              response: input.response,
+              reason: input.reason,
+            })
+            await responseQuery.refetch()
+          }}
+        />
+      </PageCard>
 
       {canManagePerformances ? (
         <div className="inline-links">
