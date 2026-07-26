@@ -125,6 +125,23 @@
   flex-wrap: wrap;
 }
 
+.nav-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid #c7d5ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #183153;
+  text-decoration: none;
+}
+
+.nav-icon-link:hover {
+  background: #eef4ff;
+}
+
 .user-name {
   color: #4f627a;
   font-size: 0.95rem;
@@ -140,7 +157,11 @@
 }
 
 .nav-link {
-  padding: 0.55rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid transparent;
   border-radius: 999px;
   color: #29405b;
@@ -162,7 +183,11 @@
   border-color: #cddcff;
   background: #dfe9ff;
   color: #183153;
-  font-weight: 700;
+}
+
+.nav-icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .app-main {

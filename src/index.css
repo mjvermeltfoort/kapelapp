@@ -73,6 +73,18 @@ button:disabled {
   opacity: 0.6;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 input,
 textarea,
 select {
@@ -179,6 +191,29 @@ p {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.page-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.icon-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #2456d6;
+  border-radius: 999px;
+  background: #2456d6;
+  color: #fff;
+  text-decoration: none;
+}
+
+.icon-link-button:hover {
+  background: #183ea2;
+  color: #fff;
 }
 
 .section-title {
@@ -513,6 +548,30 @@ input[type='radio'] {
 .status-pill--active {
   background: #dcfae6;
   color: #166534;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #29405b;
+  text-decoration: none;
+}
+
+.tab-link--active {
+  border-color: #cddcff;
+  background: #dfe9ff;
+  color: #183153;
+  font-weight: 700;
 }
 
 @media (min-width: 720px) {

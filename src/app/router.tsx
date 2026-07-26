@@ -14,9 +14,7 @@ import { PerformanceDetailPage } from '../features/performances/pages/Performanc
 import { PlannerOverviewPage } from '../features/performances/pages/PlannerOverviewPage'
 import { PerformanceCreatePage } from '../features/performances/pages/PerformanceCreatePage'
 import { PerformanceEditPage } from '../features/performances/pages/PerformanceEditPage'
-import { BandSettingsPage } from '../features/bands/pages/BandSettingsPage'
-import { MembersPage } from '../features/members/pages/MembersPage'
-import { InvitesPage } from '../features/invites/pages/InvitesPage'
+import { AdminPage } from '../features/admin/pages/AdminPage'
 
 export const router = createBrowserRouter([
   {
@@ -63,9 +61,10 @@ export const router = createBrowserRouter([
         path: 'performances/:performanceId/planner-overview',
         element: <PlannerOverviewPage />,
       },
-      { path: 'settings/band', element: <BandSettingsPage /> },
-      { path: 'settings/members', element: <MembersPage /> },
-      { path: 'settings/invites', element: <InvitesPage /> },
+      { path: 'admin', element: <AdminPage /> },
+      { path: 'settings/band', element: <Navigate to="/admin?tab=band" replace /> },
+      { path: 'settings/members', element: <Navigate to="/admin?tab=members" replace /> },
+      { path: 'settings/invites', element: <Navigate to="/admin?tab=invites" replace /> },
     ],
   },
   {

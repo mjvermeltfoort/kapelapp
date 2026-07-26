@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { Icon } from '../../../components/Icon'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { listMyPerformanceResponses } from '../../responses/api/responses'
@@ -56,12 +57,19 @@ export function PerformancesPage() {
   }
 
   return (
-    <PageCard
-      title="Overzicht aankomende optredens"
-      description={`Optredens voor ${activeMembership.band.name}. Concepten zijn alleen zichtbaar voor planner, admin en owner.`}
-    >
-      <div className="inline-links">
-        {canManagePerformances ? <Link to="/performances/new">Nieuw optreden</Link> : null}
+    <PageCard title="Optredens">
+      <div className="page-toolbar">
+        {canManagePerformances ? (
+          <Link
+            to="/performances/new"
+            className="icon-link-button"
+            aria-label="Nieuw optreden"
+            title="Nieuw optreden"
+          >
+            <Icon name="add" className="nav-icon" />
+            <span className="sr-only">Nieuw optreden</span>
+          </Link>
+        ) : null}
       </div>
 
       {performancesQuery.isLoading ? <p>Optredens worden geladen…</p> : null}

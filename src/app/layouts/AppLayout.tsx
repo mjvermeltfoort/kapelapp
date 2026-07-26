@@ -1,32 +1,35 @@
 import { useMemo, useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Icon } from '../../components/Icon'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
 
 export function AppLayout() {
+  const location = useLocation()
   const navigate = useNavigate()
   const { profile, user, signOut } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
 
   const navigation = useMemo(() => {
-    const items = [] as Array<{ to: string; label: string }>
+    const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' | 'profile' }>
 
     if (activeMembership) {
-      items.push({ to: '/performances', label: 'Optredens' })
-      items.push({ to: '/settings/band', label: 'Kapel' })
+      items.push({ to: '/performances', label: 'Optredens', icon: 'performances' })
 
       if (['admin', 'owner'].includes(activeMembership.role)) {
-        items.push({ to: '/settings/members', label: 'Leden' })
-        items.push({ to: '/settings/invites', label: 'Uitnodigingen' })
+        items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
       }
     }
 
-    items.push({ to: '/profile', label: 'Profiel' })
+    items.push({ to: '/profile', label: 'Profiel', icon: 'profile' })
 
     return items
   }, [activeMembership])
+
+  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances
 
   function handleBandSelect(bandId: string) {
     setActiveBandId(bandId)
@@ -86,6 +89,11 @@ export function AppLayout() {
         </div>
 
         <div className="user-block">
+          {showCreatePerformanceAction ? (
+            <Link to="/performances/new" className="nav-icon-link" aria-label="Nieuw optreden" title="Nieuw optreden">
+              <Icon name="add" className="nav-icon" />
+            </Link>
+          ) : null}
           <span className="user-name">{profile?.display_name ?? user?.email ?? 'Onbekende gebruiker'}</span>
           <button type="button" className="ghost-button" onClick={() => void signOut()}>
             Uitloggen
@@ -94,15 +102,24 @@ export function AppLayout() {
       </header>
 
       <nav className="app-nav" aria-label="Hoofdnavigatie">
-        {navigation.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-          >
-            {item.label}
-          </NavLink>
-        ))}
+        {navigation.map((item) => {
+          const isActive = item.to.startsWith('/admin')
+            ? location.pathname === '/admin'
+            : location.pathname.startsWith(item.to)
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={isActive ? 'nav-link active' : 'nav-link'}
+              aria-label={item.label}
+              title={item.label}
+            >
+              <Icon name={item.icon} className="nav-icon" />
+              <span className="sr-only">{item.label}</span>
+            </NavLink>
+          )
+        })}
       </nav>
 
       <main className="app-main">
