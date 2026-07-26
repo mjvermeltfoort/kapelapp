@@ -125,6 +125,8 @@ using (
   or public.has_band_role(band_id, array['planner', 'admin', 'owner'])
 );
 
+drop function if exists public.get_band_members(uuid);
+
 create or replace function public.get_band_members(
   p_band_id uuid
 )
