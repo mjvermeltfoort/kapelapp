@@ -1,0 +1,23 @@
+.page-card {
+  background: #ffffff;
+  border: 1px solid #dbe4f0;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 12px 40px rgba(22, 34, 51, 0.06);
+}
+
+.page-card__header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.page-card__header p {
+  margin: 0.5rem 0 0;
+  color: #4f627a;
+}
+
+.page-card__body {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
