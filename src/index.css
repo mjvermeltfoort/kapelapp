@@ -259,9 +259,28 @@ input[type='radio'] {
   color: #374151;
 }
 
+.member-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.member-card__actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
 @media (min-width: 720px) {
   .stats-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .member-card {
+    grid-template-columns: 1fr minmax(14rem, 18rem);
+    align-items: start;
   }
 
   .two-column-grid {
