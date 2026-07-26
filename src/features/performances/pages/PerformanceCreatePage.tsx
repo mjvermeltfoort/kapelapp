@@ -1,15 +1,56 @@
-import { FeaturePlaceholder } from '../../../components/FeaturePlaceholder'
+import { useNavigate } from 'react-router-dom'
+import { PageCard } from '../../../components/PageCard'
+import { useBand } from '../../bands/hooks/useBand'
+import { createPerformance } from '../api/performances'
+import { PerformanceForm } from '../components/PerformanceForm'
+
+const initialValues = {
+  title: '',
+  description: '',
+  performanceDate: '',
+  startTime: '',
+  endTime: '',
+  gatherTime: '',
+  location: '',
+  mapUrl: '',
+  responseDeadline: '',
+  status: 'draft' as const,
+}
 
 export function PerformanceCreatePage() {
+  const navigate = useNavigate()
+  const { activeMembership } = useBand()
+  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+
+  if (!activeMembership) {
+    return (
+      <PageCard title="Optreden aanmaken" description="Kies eerst een actieve kapel.">
+        <p>Ga eerst naar kapellenkiezer en selecteer een kapel.</p>
+      </PageCard>
+    )
+  }
+
+  if (!canManagePerformances) {
+    return (
+      <PageCard title="Optreden aanmaken" description="Alleen planners, admins en owners kunnen optredens beheren.">
+        <p>Je huidige rol heeft geen toegang tot dit scherm.</p>
+      </PageCard>
+    )
+  }
+
   return (
-    <FeaturePlaceholder
-      title="Optreden aanmaken"
-      description="Schermskelet voor create-flow van optredens."
-      checklist={[
-        'Formulier bouwen voor titel, datum, tijd en locatie',
-        'Status draft/published ondersteunen',
-        'Alleen planner+ toegang geven',
-      ]}
-    />
+    <PageCard title="Optreden aanmaken" description="Maak nieuw optreden aan als concept of publicatie.">
+      <PerformanceForm
+        submitLabel="Optreden opslaan"
+        initialValues={initialValues}
+        onSubmit={async (values) => {
+          const performance = await createPerformance({
+            bandId: activeMembership.band.id,
+            ...values,
+          })
+          navigate(`/performances/${performance.id}`, { replace: true })
+        }}
+      />
+    </PageCard>
   )
 }

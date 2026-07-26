@@ -166,3 +166,36 @@ p {
 .muted-text {
   color: #4f627a;
 }
+
+.two-column-grid,
+.three-column-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.list-card-link,
+.invite-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 16px;
+  background: #fff;
+  color: #183153;
+  text-decoration: none;
+}
+
+.invite-card {
+  grid-template-columns: 1fr auto;
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .two-column-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .three-column-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
