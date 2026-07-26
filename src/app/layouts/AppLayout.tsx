@@ -96,8 +96,29 @@ export function AppLayout() {
     void navigate('/performances')
   }
 
+  const showInstallBanner = !isStandalone && (Boolean(installPrompt) || showInstallHint)
+
   return (
     <div className="app-shell">
+      {showInstallBanner ? (
+        <div className="install-banner" role="region" aria-label="App installeren">
+          <span className="install-banner__text">
+            {installPrompt
+              ? 'Installeer Kapelapp voor snelle toegang vanaf je startscherm.'
+              : 'Installeer Kapelapp via Chrome-menu voor snelle toegang vanaf je startscherm.'}
+          </span>
+          {installPrompt ? (
+            <button
+              type="button"
+              className="install-banner__button"
+              onClick={() => void handleInstallClick()}
+            >
+              Installeer
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <header className="app-header">
         <div className="header-left">
           <div className="brand-menu">
@@ -148,18 +169,6 @@ export function AppLayout() {
         </div>
 
         <div className="user-block">
-          {installPrompt && !isStandalone ? (
-            <button
-              type="button"
-              className="ghost-button app-install-button"
-              onClick={() => void handleInstallClick()}
-            >
-              Installeer app
-            </button>
-          ) : null}
-          {showInstallHint ? (
-            <span className="install-hint">Open Chrome-menu en kies ‘App installeren’</span>
-          ) : null}
           {showCreatePerformanceAction ? (
             <Link to="/performances/new" className="nav-icon-link" aria-label="Nieuw optreden" title="Nieuw optreden">
               <Icon name="add" className="nav-icon" />
