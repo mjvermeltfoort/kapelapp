@@ -11,6 +11,8 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isOtpLoading, setIsOtpLoading] = useState(false)
   const redirectTo = searchParams.get('redirectTo') || '/bands'
 
   async function handleGoogleLogin() {
@@ -20,6 +22,9 @@ export function LoginPage() {
     }
 
     setError(null)
+    setMessage(null)
+    setIsGoogleLoading(true)
+
     const callbackUrl = new URL('/auth/callback', window.location.origin)
     callbackUrl.searchParams.set('redirectTo', redirectTo)
 
@@ -30,6 +35,8 @@ export function LoginPage() {
 
     if (authError) {
       setError(authError.message)
+      setIsGoogleLoading(false)
+      return
     }
   }
 
@@ -43,6 +50,7 @@ export function LoginPage() {
 
     setError(null)
     setMessage(null)
+    setIsOtpLoading(true)
 
     const callbackUrl = new URL('/auth/callback', window.location.origin)
     callbackUrl.searchParams.set('redirectTo', redirectTo)
@@ -54,6 +62,7 @@ export function LoginPage() {
 
     if (otpError) {
       setError(otpError.message)
+      setIsOtpLoading(false)
       return
     }
 
@@ -68,11 +77,21 @@ export function LoginPage() {
         description="Gebruik Google of een eenmalige code per e-mail."
       >
         {!isConfigured ? (
-          <p role="alert">Supabase-config ontbreekt. Zet `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY`.</p>
+          <p role="alert" className="alert alert--error">
+            Supabase-config ontbreekt. Zet `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY`.
+          </p>
         ) : null}
 
-        <button type="button" onClick={() => void handleGoogleLogin()}>
-          Inloggen met Google
+        <p className="muted-text">
+          Gebruik bij voorkeur steeds hetzelfde e-mailadres voor Google en OTP.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => void handleGoogleLogin()}
+          disabled={isGoogleLoading || isOtpLoading}
+        >
+          {isGoogleLoading ? 'Doorsturen naar Google…' : 'Inloggen met Google'}
         </button>
 
         <form onSubmit={(event) => void handleOtpRequest(event)}>
@@ -86,11 +105,13 @@ export function LoginPage() {
               placeholder="jij@voorbeeld.nl"
             />
           </label>
-          <button type="submit">Stuur eenmalige code</button>
+          <button type="submit" disabled={isGoogleLoading || isOtpLoading}>
+            {isOtpLoading ? 'Code wordt verstuurd…' : 'Stuur eenmalige code'}
+          </button>
         </form>
 
-        {message ? <p>{message}</p> : null}
-        {error ? <p role="alert">{error}</p> : null}
+        {message ? <p className="alert alert--success">{message}</p> : null}
+        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
       </PageCard>
     </main>
   )

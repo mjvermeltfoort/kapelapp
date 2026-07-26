@@ -1,35 +1,93 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
 
-const navigation = [
-  { to: '/bands', label: 'Kapellen' },
-  { to: '/performances', label: 'Optredens' },
-  { to: '/settings/members', label: 'Leden' },
-  { to: '/settings/invites', label: 'Uitnodigingen' },
-  { to: '/profile', label: 'Profiel' },
-]
-
 export function AppLayout() {
+  const navigate = useNavigate()
   const { profile, user, signOut } = useAuth()
-  const { activeMembership } = useBand()
+  const { activeMembership, memberships, setActiveBandId } = useBand()
+  const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
+
+  const navigation = useMemo(() => {
+    const items = [] as Array<{ to: string; label: string }>
+
+    if (activeMembership) {
+      items.push({ to: '/performances', label: 'Optredens' })
+      items.push({ to: '/settings/band', label: 'Kapel' })
+
+      if (['admin', 'owner'].includes(activeMembership.role)) {
+        items.push({ to: '/settings/members', label: 'Leden' })
+        items.push({ to: '/settings/invites', label: 'Uitnodigingen' })
+      }
+    }
+
+    items.push({ to: '/profile', label: 'Profiel' })
+
+    return items
+  }, [activeMembership])
+
+  function handleBandSelect(bandId: string) {
+    setActiveBandId(bandId)
+    setIsBandMenuOpen(false)
+    void navigate('/performances')
+  }
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
-          <p className="eyebrow">Kapelapp</p>
-          <h1>MVP shell</h1>
-          <p className="subtitle">
-            {activeMembership
-              ? `Actieve kapel: ${activeMembership.band.name} · rol ${activeMembership.role}`
-              : 'Nog geen actieve kapel geselecteerd.'}
-          </p>
+        <div className="header-left">
+          <div className="brand-menu">
+            <button
+              type="button"
+              className={isBandMenuOpen ? 'brand-trigger brand-trigger--open' : 'brand-trigger'}
+              onClick={() => setIsBandMenuOpen((current) => !current)}
+              aria-expanded={isBandMenuOpen}
+              aria-haspopup="menu"
+            >
+              <img src="/favicon.svg" alt="Kapelapp logo" className="brand-logo" />
+              <div className="brand-text">
+                <h1>Kapelapp</h1>
+                <span className="subtitle">
+                  {activeMembership ? activeMembership.band.name : 'Geen actieve kapel'}
+                </span>
+              </div>
+            </button>
+
+            {isBandMenuOpen ? (
+              <div className="brand-panel" role="menu">
+                <div className="brand-panel__section">
+                  {memberships.map((membership) => (
+                    <button
+                      key={membership.id}
+                      type="button"
+                      className={
+                        membership.band_id === activeMembership?.band_id
+                          ? 'brand-panel__item brand-panel__item--active'
+                          : 'brand-panel__item'
+                      }
+                      onClick={() => handleBandSelect(membership.band_id)}
+                    >
+                      <strong>{membership.band.name}</strong>
+                      <span>{membership.role}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="brand-panel__footer">
+                  <Link to="/bands" className="brand-panel__link" onClick={() => setIsBandMenuOpen(false)}>
+                    Kapellen beheren
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
+
         <div className="user-block">
-          <span>{profile?.display_name ?? user?.email ?? 'Onbekende gebruiker'}</span>
-          <button type="button" onClick={() => void signOut()}>
+          <span className="user-name">{profile?.display_name ?? user?.email ?? 'Onbekende gebruiker'}</span>
+          <button type="button" className="ghost-button" onClick={() => void signOut()}>
             Uitloggen
           </button>
         </div>

@@ -122,7 +122,7 @@ export function BandSettingsPage() {
         description="Basisbeheer voor naam, beschrijving en zichtbaarheid van onderlinge reacties."
       >
         {!canManageBand ? (
-          <p>Alleen admins en owners kunnen kapelinstellingen wijzigen.</p>
+          <p className="alert alert--info">Alleen admins en owners kunnen kapelinstellingen wijzigen.</p>
         ) : null}
 
         <form onSubmit={(event) => void handleSettingsSubmit(event)}>
@@ -164,8 +164,8 @@ export function BandSettingsPage() {
           </button>
         </form>
 
-        {settingsMessage ? <p>{settingsMessage}</p> : null}
-        {settingsError ? <p role="alert">{settingsError}</p> : null}
+        {settingsMessage ? <p className="alert alert--success">{settingsMessage}</p> : null}
+        {settingsError ? <p role="alert" className="alert alert--error">{settingsError}</p> : null}
       </PageCard>
 
       <PageCard
@@ -213,8 +213,8 @@ export function BandSettingsPage() {
           Als je enige owner bent, wordt verlaten door backend geblokkeerd.
         </p>
 
-        {membershipMessage ? <p>{membershipMessage}</p> : null}
-        {membershipError ? <p role="alert">{membershipError}</p> : null}
+        {membershipMessage ? <p className="alert alert--success">{membershipMessage}</p> : null}
+        {membershipError ? <p role="alert" className="alert alert--error">{membershipError}</p> : null}
       </PageCard>
     </div>
   )

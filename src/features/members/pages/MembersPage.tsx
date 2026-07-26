@@ -59,6 +59,10 @@ export function MembersPage() {
       return
     }
 
+    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} wilt deactiveren?`)) {
+      return
+    }
+
     setMessage(null)
     setError(null)
     setPendingKey(`deactivate:${member.user_id}`)
@@ -125,11 +129,11 @@ export function MembersPage() {
       description={`Beheer leden van ${activeMembership.band.name}. Owners kunnen owner-rollen beheren; admins niet.`}
     >
       {membersQuery.isLoading ? <p>Leden worden geladen…</p> : null}
-      {membersQuery.error instanceof Error ? <p role="alert">{membersQuery.error.message}</p> : null}
-      {message ? <p>{message}</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {membersQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{membersQuery.error.message}</p> : null}
+      {message ? <p className="alert alert--success">{message}</p> : null}
+      {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
 
-      {!membersQuery.isLoading && !membersQuery.data?.length ? <p>Geen leden gevonden.</p> : null}
+      {!membersQuery.isLoading && !membersQuery.data?.length ? <p className="empty-state">Geen leden gevonden.</p> : null}
 
       <div className="stack-sm">
         {membersQuery.data?.map((member) => {
@@ -146,7 +150,12 @@ export function MembersPage() {
                 <strong>{member.display_name ?? member.email}</strong>
                 <p>{member.email}</p>
                 <p>Instrument: {member.instrument ?? 'Niet ingevuld'}</p>
-                <p>Status: {member.is_active ? 'Actief' : 'Inactief'}</p>
+                <p>
+                  Status:{' '}
+                  <span className={member.is_active ? 'status-pill status-pill--active' : 'status-pill'}>
+                    {member.is_active ? 'Actief' : 'Inactief'}
+                  </span>
+                </p>
                 <p>
                   Lid sinds: {new Date(member.joined_at).toLocaleDateString()}
                   {member.left_at ? ` · Vertrokken: ${new Date(member.left_at).toLocaleDateString()}` : ''}

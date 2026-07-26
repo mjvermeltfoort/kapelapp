@@ -11,11 +11,6 @@
   font-size: 1.25rem;
 }
 
-.page-card__header p {
-  margin: 0.5rem 0 0;
-  color: #4f627a;
-}
-
 .page-card__body {
   margin-top: 1rem;
   display: grid;

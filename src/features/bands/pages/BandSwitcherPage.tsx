@@ -8,17 +8,20 @@ export function BandSwitcherPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
+  const [createMessage, setCreateMessage] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setCreateError(null)
+    setCreateMessage(null)
     setIsCreating(true)
 
     try {
       await createOwnedBand({ name, description })
       setName('')
       setDescription('')
+      setCreateMessage('Kapel aangemaakt en als actieve kapel geselecteerd.')
     } catch (submitError) {
       setCreateError(submitError instanceof Error ? submitError.message : 'Kapel aanmaken mislukt.')
     } finally {
@@ -33,10 +36,10 @@ export function BandSwitcherPage() {
         description="Kies actieve kapel voor volgende schermen. Nieuwe kapel wordt automatisch met owner-rol aangemaakt."
       >
         {isLoading ? <p>Kapellen worden geladen…</p> : null}
-        {error ? <p role="alert">{error}</p> : null}
+        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
 
         {!isLoading && !memberships.length ? (
-          <p>Je bent nog geen lid van een kapel. Maak eerste kapel aan of gebruik later een uitnodigingslink.</p>
+          <p className="empty-state">Je bent nog geen lid van een kapel. Maak eerste kapel aan of gebruik later een uitnodigingslink.</p>
         ) : null}
 
         <div className="stack-sm">
@@ -53,6 +56,9 @@ export function BandSwitcherPage() {
                 <strong>{membership.band.name}</strong>
                 <span>Rol: {membership.role}</span>
                 <span>Instrument: {membership.instrument ?? 'Nog niet ingevuld'}</span>
+                <span className={isActive ? 'selection-badge selection-badge--active' : 'selection-badge'}>
+                  {isActive ? 'Actieve kapel' : 'Tik om te selecteren'}
+                </span>
               </button>
             )
           })}
@@ -70,6 +76,8 @@ export function BandSwitcherPage() {
         title="Nieuwe kapel aanmaken"
         description="Maakt band en owner-lidmaatschap in één stap aan via database-RPC."
       >
+        <p className="muted-text">Handig als startpunt wanneer je nog geen uitnodigingslink hebt.</p>
+
         <form onSubmit={(event) => void handleSubmit(event)}>
           <label>
             Naam
@@ -99,7 +107,8 @@ export function BandSwitcherPage() {
           </button>
         </form>
 
-        {createError ? <p role="alert">{createError}</p> : null}
+        {createMessage ? <p className="alert alert--success">{createMessage}</p> : null}
+        {createError ? <p role="alert" className="alert alert--error">{createError}</p> : null}
       </PageCard>
     </div>
   )

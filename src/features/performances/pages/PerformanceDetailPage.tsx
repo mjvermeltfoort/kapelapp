@@ -99,7 +99,7 @@ export function PerformanceDetailPage() {
         description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht."
       >
         {responseQuery.isLoading ? <p>Reactie wordt geladen…</p> : null}
-        {responseQuery.error instanceof Error ? <p role="alert">{responseQuery.error.message}</p> : null}
+        {responseQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{responseQuery.error.message}</p> : null}
 
         <PerformanceResponseForm
           currentResponse={responseQuery.data ?? null}

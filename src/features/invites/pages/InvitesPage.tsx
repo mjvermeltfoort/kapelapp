@@ -10,6 +10,7 @@ export function InvitesPage() {
   const [maxUses, setMaxUses] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [latestJoinUrl, setLatestJoinUrl] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const canManageInvites = useMemo(
@@ -42,9 +43,14 @@ export function InvitesPage() {
       })
 
       const joinUrl = `${window.location.origin}/join/${result.token}`
-      await navigator.clipboard.writeText(joinUrl)
+      setLatestJoinUrl(joinUrl)
 
-      setMessage('Uitnodigingslink aangemaakt en naar klembord gekopieerd.')
+      try {
+        await navigator.clipboard.writeText(joinUrl)
+        setMessage('Uitnodigingslink aangemaakt en naar klembord gekopieerd.')
+      } catch {
+        setMessage('Uitnodigingslink aangemaakt. Kopieer de link handmatig hieronder.')
+      }
       setExpiresAt('')
       setMaxUses('')
       await invitesQuery.refetch()
@@ -85,7 +91,7 @@ export function InvitesPage() {
         title="Nieuwe uitnodigingslink"
         description="Admins en owners kunnen leden met een veilige link laten deelnemen. Nieuwe links geven standaard rol member."
       >
-        {!canManageInvites ? <p>Alleen admins en owners kunnen uitnodigingen beheren.</p> : null}
+        {!canManageInvites ? <p className="alert alert--info">Alleen admins en owners kunnen uitnodigingen beheren.</p> : null}
 
         <form onSubmit={(event) => void handleCreateInvite(event)}>
           <label>
@@ -116,8 +122,15 @@ export function InvitesPage() {
           </button>
         </form>
 
-        {message ? <p>{message}</p> : null}
-        {error ? <p role="alert">{error}</p> : null}
+        {latestJoinUrl ? (
+          <label>
+            Laatst aangemaakte link
+            <input type="text" value={latestJoinUrl} readOnly />
+          </label>
+        ) : null}
+
+        {message ? <p className="alert alert--success">{message}</p> : null}
+        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
       </PageCard>
 
       <PageCard
@@ -125,7 +138,7 @@ export function InvitesPage() {
         description="Actieve en ingetrokken links voor huidige kapel. Token zelf wordt niet opnieuw getoond."
       >
         {invitesQuery.isLoading ? <p>Uitnodigingen worden geladen…</p> : null}
-        {invitesQuery.error instanceof Error ? <p role="alert">{invitesQuery.error.message}</p> : null}
+        {invitesQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{invitesQuery.error.message}</p> : null}
 
         {!invitesQuery.isLoading && !invitesQuery.data?.length ? (
           <p>Nog geen uitnodigingen aangemaakt.</p>

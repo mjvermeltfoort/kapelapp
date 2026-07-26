@@ -7,52 +7,157 @@
 .app-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid #dbe4f0;
   background: #ffffff;
 }
 
-.eyebrow {
+.header-left {
+  min-width: 0;
+}
+
+.brand-menu {
+  position: relative;
+}
+
+.brand-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+}
+
+.brand-trigger:hover,
+.brand-trigger--open {
+  border-color: #dbe4f0;
+  background: #f8fbff;
+}
+
+.brand-logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+}
+
+.brand-text {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.brand-text h1 {
   margin: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #3a63dd;
+  font-size: 1.1rem;
+  line-height: 1.1;
 }
 
 .subtitle {
-  margin: 0.25rem 0 0;
   color: #4f627a;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 20;
+  min-width: 15rem;
+  padding: 0.5rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(22, 34, 51, 0.12);
+}
+
+.brand-panel__section,
+.brand-panel__footer {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.brand-panel__footer {
+  margin-top: 0.4rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid #edf2f7;
+}
+
+.brand-panel__item,
+.brand-panel__link {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #183153;
+  text-align: left;
+  text-decoration: none;
+}
+
+.brand-panel__item:hover,
+.brand-panel__link:hover,
+.brand-panel__item--active {
+  border-color: #dbe4f0;
+  background: #f8fbff;
+}
+
+.brand-panel__item span {
+  color: #4f627a;
+  font-size: 0.85rem;
 }
 
 .user-block {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
+}
+
+.user-name {
+  color: #4f627a;
+  font-size: 0.95rem;
 }
 
 .app-nav {
   display: flex;
-  gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
   overflow-x: auto;
   border-bottom: 1px solid #dbe4f0;
-  background: #f8fbff;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
 }
 
 .nav-link {
-  padding: 0.625rem 0.875rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid transparent;
   border-radius: 999px;
   color: #29405b;
   text-decoration: none;
   background: transparent;
   white-space: nowrap;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.nav-link:hover {
+  border-color: #d6e3ff;
+  background: #ffffff;
 }
 
 .nav-link.active {
+  border-color: #cddcff;
   background: #dfe9ff;
   color: #183153;
   font-weight: 700;
@@ -64,7 +169,25 @@
 
 @media (max-width: 640px) {
   .app-header {
-    flex-direction: column;
+    align-items: stretch;
+    padding: 0.9rem 1rem;
+  }
+
+  .brand-panel {
+    right: 0;
+    left: 0;
+    min-width: 0;
+  }
+
+  .user-block {
+    justify-content: space-between;
+  }
+
+  .user-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .app-main {
