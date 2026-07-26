@@ -1,14 +1,20 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
 
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   const navigation = useMemo(() => {
     const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' }>
@@ -26,6 +32,35 @@ export function AppLayout() {
 
   const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
   const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances
+
+  useEffect(() => {
+    function handleBeforeInstallPrompt(event: Event) {
+      event.preventDefault()
+      setInstallPrompt(event as BeforeInstallPromptEvent)
+    }
+
+    function handleAppInstalled() {
+      setInstallPrompt(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  async function handleInstallClick() {
+    if (!installPrompt) {
+      return
+    }
+
+    await installPrompt.prompt()
+    await installPrompt.userChoice
+    setInstallPrompt(null)
+  }
 
   function handleBandSelect(bandId: string) {
     setActiveBandId(bandId)
@@ -85,6 +120,15 @@ export function AppLayout() {
         </div>
 
         <div className="user-block">
+          {installPrompt ? (
+            <button
+              type="button"
+              className="ghost-button app-install-button"
+              onClick={() => void handleInstallClick()}
+            >
+              Installeer app
+            </button>
+          ) : null}
           {showCreatePerformanceAction ? (
             <Link to="/performances/new" className="nav-icon-link" aria-label="Nieuw optreden" title="Nieuw optreden">
               <Icon name="add" className="nav-icon" />

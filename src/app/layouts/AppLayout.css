@@ -125,6 +125,11 @@
   flex-wrap: wrap;
 }
 
+.app-install-button {
+  padding-inline: 0.8rem;
+  white-space: nowrap;
+}
+
 .nav-icon-link {
   display: inline-flex;
   align-items: center;
@@ -203,6 +208,12 @@
 
   .user-block {
     justify-content: space-between;
+  }
+
+  .app-install-button {
+    order: 1;
+    width: 100%;
+    justify-content: center;
   }
 
   .app-main {
