@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
 
 const navigation = [
@@ -12,6 +13,7 @@ const navigation = [
 
 export function AppLayout() {
   const { profile, user, signOut } = useAuth()
+  const { activeMembership } = useBand()
 
   return (
     <div className="app-shell">
@@ -19,7 +21,11 @@ export function AppLayout() {
         <div>
           <p className="eyebrow">Kapelapp</p>
           <h1>MVP shell</h1>
-          <p className="subtitle">Basisrouting, auth-shell en schermskelet.</p>
+          <p className="subtitle">
+            {activeMembership
+              ? `Actieve kapel: ${activeMembership.band.name} · rol ${activeMembership.role}`
+              : 'Nog geen actieve kapel geselecteerd.'}
+          </p>
         </div>
         <div className="user-block">
           <span>{profile?.display_name ?? user?.email ?? 'Onbekende gebruiker'}</span>
