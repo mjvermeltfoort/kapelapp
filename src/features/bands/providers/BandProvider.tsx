@@ -6,7 +6,13 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { createBand, listMyBandMemberships, type BandMembership } from '../api/bands'
+import {
+  createBand,
+  leaveBand,
+  listMyBandMemberships,
+  type BandMembership,
+  updateMyInstrument,
+} from '../api/bands'
 import { useAuth } from '../../auth/hooks/useAuth'
 
 type BandContextValue = {
@@ -18,6 +24,8 @@ type BandContextValue = {
   setActiveBandId: (bandId: string) => void
   refreshBands: () => Promise<void>
   createOwnedBand: (input: { name: string; description: string }) => Promise<string>
+  saveMyInstrument: (input: { bandId: string; instrument: string }) => Promise<void>
+  leaveActiveBand: () => Promise<void>
 }
 
 const ACTIVE_BAND_STORAGE_KEY = 'kapelapp.activeBandId'
@@ -104,6 +112,18 @@ export function BandProvider({ children }: PropsWithChildren) {
           window.localStorage.setItem(ACTIVE_BAND_STORAGE_KEY, bandId)
         }
         return bandId
+      },
+      saveMyInstrument: async (input) => {
+        await updateMyInstrument(input)
+        await queryClient.invalidateQueries({ queryKey: ['my-band-memberships', user?.id] })
+      },
+      leaveActiveBand: async () => {
+        if (!activeBandId) {
+          return
+        }
+
+        await leaveBand({ bandId: activeBandId })
+        await queryClient.invalidateQueries({ queryKey: ['my-band-memberships', user?.id] })
       },
     }
   }, [activeBandId, membershipsQuery, queryClient, user?.id])

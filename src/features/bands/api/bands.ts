@@ -137,3 +137,29 @@ export async function updateBand(input: {
 
   return data satisfies Band
 }
+
+export async function updateMyInstrument(input: {
+  bandId: string
+  instrument: string
+}): Promise<BandMembership> {
+  const { data, error } = await supabase.rpc('update_my_membership_instrument', {
+    p_band_id: input.bandId,
+    p_instrument: input.instrument,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data as BandMembership
+}
+
+export async function leaveBand(input: { bandId: string }): Promise<void> {
+  const { error } = await supabase.rpc('leave_band', {
+    p_band_id: input.bandId,
+  })
+
+  if (error) {
+    throw error
+  }
+}
