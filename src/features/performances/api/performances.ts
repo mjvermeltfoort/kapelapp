@@ -37,6 +37,42 @@ export type PerformanceInput = {
   status: PerformanceStatus
 }
 
+export type PerformanceOverviewPerson = {
+  user_id: string
+  display_name: string
+  instrument: string | null
+  reason?: string | null
+  responded_at?: string
+}
+
+export type PerformanceOverviewInstrumentCount = {
+  instrument: string
+  yes: number
+  maybe: number
+  no: number
+  no_response: number
+  total: number
+}
+
+export type PerformanceOverview = {
+  performance: Pick<
+    Performance,
+    'id' | 'title' | 'performance_date' | 'start_time' | 'location' | 'status' | 'response_deadline'
+  >
+  counts: {
+    yes: number
+    maybe: number
+    no: number
+    no_response: number
+    total_members: number
+  }
+  yes: PerformanceOverviewPerson[]
+  maybe: PerformanceOverviewPerson[]
+  no: PerformanceOverviewPerson[]
+  no_response: PerformanceOverviewPerson[]
+  instrument_counts: PerformanceOverviewInstrumentCount[]
+}
+
 const PERFORMANCE_SELECT =
   'id, band_id, title, description, performance_date, start_time, end_time, gather_time, location, map_url, response_deadline, status, cancelled_at, archived_at, created_by, updated_by, created_at, updated_at'
 
@@ -155,4 +191,18 @@ export async function updatePerformance(
   }
 
   return data as Performance
+}
+
+export async function getPerformanceResponseOverview(
+  performanceId: string,
+): Promise<PerformanceOverview> {
+  const { data, error } = await supabase.rpc('get_performance_response_overview', {
+    p_performance_id: performanceId,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data as PerformanceOverview
 }
