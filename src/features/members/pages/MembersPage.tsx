@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { PageCard } from '../../../components/PageCard'
+import { useAuth } from '../../auth/hooks/useAuth'
 import type { BandMembership } from '../../bands/api/bands'
 import { useBand } from '../../bands/hooks/useBand'
 import {
   deactivateBandMember,
+  listAllMembers,
   listBandMembers,
   reactivateBandMember,
   setBandMemberRole,
@@ -14,34 +16,32 @@ import {
 const roleOptions: Array<BandMembership['role']> = ['member', 'planner', 'admin', 'owner']
 
 export function MembersPage() {
+  const { profile } = useAuth()
   const { activeMembership } = useBand()
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
 
+  const isSuperadmin = profile?.is_superadmin ?? false
   const canManageMembers = useMemo(
-    () => ['admin', 'owner'].includes(activeMembership?.role ?? ''),
-    [activeMembership?.role],
+    () => isSuperadmin || ['admin', 'owner'].includes(activeMembership?.role ?? ''),
+    [activeMembership?.role, isSuperadmin],
   )
 
   const membersQuery = useQuery({
-    queryKey: ['band-members', activeMembership?.band.id],
-    queryFn: async () => listBandMembers(activeMembership!.band.id),
-    enabled: Boolean(activeMembership?.band.id && canManageMembers),
+    queryKey: isSuperadmin ? ['all-members'] : ['band-members', activeMembership?.band.id],
+    queryFn: async () => (isSuperadmin ? listAllMembers() : listBandMembers(activeMembership!.band.id)),
+    enabled: Boolean(canManageMembers && (isSuperadmin || activeMembership?.band.id)),
   })
 
   async function handleRoleChange(member: BandMemberRecord, role: BandMembership['role']) {
-    if (!activeMembership) {
-      return
-    }
-
     setMessage(null)
     setError(null)
     setPendingKey(`role:${member.user_id}`)
 
     try {
       await setBandMemberRole({
-        bandId: activeMembership.band.id,
+        bandId: member.band_id,
         userId: member.user_id,
         role,
       })
@@ -55,10 +55,6 @@ export function MembersPage() {
   }
 
   async function handleDeactivate(member: BandMemberRecord) {
-    if (!activeMembership) {
-      return
-    }
-
     if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} wilt deactiveren?`)) {
       return
     }
@@ -69,7 +65,7 @@ export function MembersPage() {
 
     try {
       await deactivateBandMember({
-        bandId: activeMembership.band.id,
+        bandId: member.band_id,
         userId: member.user_id,
       })
       setMessage('Lid gedeactiveerd.')
@@ -82,17 +78,13 @@ export function MembersPage() {
   }
 
   async function handleReactivate(member: BandMemberRecord) {
-    if (!activeMembership) {
-      return
-    }
-
     setMessage(null)
     setError(null)
     setPendingKey(`reactivate:${member.user_id}`)
 
     try {
       await reactivateBandMember({
-        bandId: activeMembership.band.id,
+        bandId: member.band_id,
         userId: member.user_id,
       })
       setMessage('Lid opnieuw geactiveerd.')
@@ -104,51 +96,48 @@ export function MembersPage() {
     }
   }
 
-  if (!activeMembership) {
+  if (!activeMembership && !isSuperadmin) {
     return (
-      <PageCard title="Leden- en rollenbeheer" description="Kies eerst een actieve kapel.">
-        <p>Ga eerst naar kapellenkiezer en selecteer een kapel.</p>
+      <PageCard title="Leden- en rollenbeheer">
+        <p>Kies eerst een actieve kapel.</p>
       </PageCard>
     )
   }
 
   if (!canManageMembers) {
     return (
-      <PageCard
-        title="Leden- en rollenbeheer"
-        description="Alleen admins en owners kunnen leden en rollen beheren."
-      >
+      <PageCard title="Leden- en rollenbeheer">
         <p>Je huidige rol heeft geen toegang tot dit scherm.</p>
       </PageCard>
     )
   }
 
   return (
-    <PageCard
-      title="Leden- en rollenbeheer"
-      description={`Beheer leden van ${activeMembership.band.name}. Owners kunnen owner-rollen beheren; admins niet.`}
-    >
+    <PageCard title={isSuperadmin ? 'Alle leden' : 'Leden- en rollenbeheer'}>
       {membersQuery.isLoading ? <p>Leden worden geladen…</p> : null}
       {membersQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{membersQuery.error.message}</p> : null}
       {message ? <p className="alert alert--success">{message}</p> : null}
       {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
 
-      {!membersQuery.isLoading && !membersQuery.data?.length ? <p className="empty-state">Geen leden gevonden.</p> : null}
+      {!membersQuery.isLoading && !membersQuery.data?.length ? (
+        <p className="empty-state">Geen leden gevonden.</p>
+      ) : null}
 
       <div className="stack-sm">
         {membersQuery.data?.map((member) => {
           const isPending = pendingKey?.includes(member.user_id) ?? false
-          const canAssignOwner = activeMembership.role === 'owner'
+          const canAssignOwner = isSuperadmin || activeMembership?.role === 'owner'
           const roleChoices = canAssignOwner
             ? roleOptions
             : roleOptions.filter((role) => role !== 'owner')
-          const canChangeRole = canAssignOwner || member.role !== 'owner'
+          const canChangeRole = isSuperadmin || canAssignOwner || member.role !== 'owner'
 
           return (
             <div key={member.membership_id} className="member-card">
               <div>
                 <strong>{member.display_name ?? member.email}</strong>
                 <p>{member.email}</p>
+                <p>Kapel: {member.band_name}</p>
                 <p>Instrument: {member.instrument ?? 'Niet ingevuld'}</p>
                 <p>
                   Status:{' '}

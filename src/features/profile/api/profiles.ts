@@ -5,6 +5,7 @@ export type Profile = {
   id: string
   email: string
   display_name: string | null
+  is_superadmin: boolean
   created_at: string
   updated_at: string
 }
@@ -33,7 +34,7 @@ export async function ensureProfile(user: User): Promise<Profile> {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, display_name, created_at, updated_at')
+    .select('id, email, display_name, is_superadmin, created_at, updated_at')
     .eq('id', user.id)
     .single()
 
@@ -64,7 +65,7 @@ export async function updateMyProfile(input: { displayName: string }): Promise<P
     .from('profiles')
     .update({ display_name: displayName })
     .eq('id', user.id)
-    .select('id, email, display_name, created_at, updated_at')
+    .select('id, email, display_name, is_superadmin, created_at, updated_at')
     .single()
 
   if (error) {

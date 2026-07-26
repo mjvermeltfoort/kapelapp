@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
 
@@ -22,6 +23,7 @@ function isAndroidChrome() {
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
@@ -33,14 +35,14 @@ export function AppLayout() {
 
     if (activeMembership) {
       items.push({ to: '/performances', label: 'Optredens', icon: 'performances' })
+    }
 
-      if (['admin', 'owner'].includes(activeMembership.role)) {
-        items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
-      }
+    if (profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')) {
+      items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
     }
 
     return items
-  }, [activeMembership])
+  }, [activeMembership, profile?.is_superadmin])
 
   const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
   const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances

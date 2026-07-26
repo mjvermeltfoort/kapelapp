@@ -4,6 +4,7 @@ import type { BandMembership } from '../../bands/api/bands'
 export type BandMemberRecord = {
   membership_id: string
   band_id: string
+  band_name: string
   user_id: string
   email: string
   display_name: string | null
@@ -18,6 +19,16 @@ export async function listBandMembers(bandId: string): Promise<BandMemberRecord[
   const { data, error } = await supabase.rpc('get_band_members', {
     p_band_id: bandId,
   })
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []) as BandMemberRecord[]
+}
+
+export async function listAllMembers(): Promise<BandMemberRecord[]> {
+  const { data, error } = await supabase.rpc('get_all_members')
 
   if (error) {
     throw error
