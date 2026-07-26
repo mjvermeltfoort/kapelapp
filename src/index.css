@@ -9,6 +9,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
 }
 
 * {
@@ -21,8 +22,21 @@ body,
   min-height: 100%;
 }
 
+html {
+  background: #f3f7fb;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 a {
@@ -47,6 +61,7 @@ button {
   background: #2456d6;
   color: #fff;
   padding: 0.75rem 1rem;
+  touch-action: manipulation;
 }
 
 button:hover {
