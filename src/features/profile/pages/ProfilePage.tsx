@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
 import { FormField, Input } from '../../../components/FormField'
@@ -95,20 +96,37 @@ export function ProfilePage() {
     }
   }
 
+  const profileName = profile?.display_name ?? 'Nog niet ingesteld'
+  const profileEmail = profile?.email ?? user?.email ?? 'Onbekend'
+  const initials = (profile?.display_name ?? user?.email ?? 'K').trim().slice(0, 1).toUpperCase()
+
   return (
     <div className="page-grid">
-      <PageCard title="Profiel">
-        <form onSubmit={(event) => void handleSubmit(event)}>
-          <FormField label="Weergavenaam">
-            <Input
-              type="text"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              required
-              minLength={2}
-              maxLength={80}
-            />
-          </FormField>
+      <PageCard title="Profiel" description="Jouw account en persoonlijke gegevens.">
+        <div className="profile-hero">
+          <div className="profile-hero__avatar" aria-hidden="true">
+            {initials}
+          </div>
+          <div className="profile-hero__content">
+            <strong>{profileName}</strong>
+            <p>{profileEmail}</p>
+            <Badge tone="brand">Profiel</Badge>
+          </div>
+        </div>
+
+        <form onSubmit={(event) => void handleSubmit(event)} className="performance-form">
+          <section className="performance-form__section">
+            <FormField label="Weergavenaam">
+              <Input
+                type="text"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                required
+                minLength={2}
+                maxLength={80}
+              />
+            </FormField>
+          </section>
 
           <Button type="submit" disabled={isSaving} fullWidth>
             {isSaving ? 'Bezig met opslaan…' : 'Opslaan'}
@@ -118,61 +136,71 @@ export function ProfilePage() {
         {message ? <Alert tone="success">{message}</Alert> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
 
-        <dl>
-          <div>
-            <dt>E-mailadres</dt>
-            <dd>{profile?.email ?? user?.email ?? 'Onbekend'}</dd>
+        <div className="profile-info-grid">
+          <div className="performance-meta-card">
+            <span className="performance-meta-card__label">E-mailadres</span>
+            <strong>{profileEmail}</strong>
           </div>
-          <div>
-            <dt>Weergavenaam</dt>
-            <dd>{profile?.display_name ?? 'Nog niet ingesteld'}</dd>
+          <div className="performance-meta-card">
+            <span className="performance-meta-card__label">Weergavenaam</span>
+            <strong>{profileName}</strong>
           </div>
-          <div>
-            <dt>Gebruikers-ID</dt>
-            <dd>{user?.id ?? 'Onbekend'}</dd>
+          <div className="performance-meta-card performance-meta-card--wide">
+            <span className="performance-meta-card__label">Gebruikers-ID</span>
+            <strong className="profile-user-id">{user?.id ?? 'Onbekend'}</strong>
           </div>
-        </dl>
+        </div>
 
         <Button type="button" variant="ghost" onClick={() => void signOut()} fullWidth>
           Uitloggen
         </Button>
       </PageCard>
 
-      <PageCard title="Actieve kapel">
+      <PageCard title="Actieve kapel" description="Jouw rol en instellingen binnen huidige kapel.">
         {!activeMembership ? <EmptyState>Geen actieve kapel geselecteerd.</EmptyState> : null}
 
         {activeMembership ? (
           <>
-            <form onSubmit={(event) => void handleMembershipSubmit(event)}>
-              <FormField label="Instrument">
-                <Input
-                  type="text"
-                  value={instrument}
-                  onChange={(event) => setInstrument(event.target.value)}
-                  maxLength={80}
-                  placeholder="Bijvoorbeeld: trompet"
-                />
-              </FormField>
+            <div className="profile-band-header">
+              <div>
+                <strong>{activeMembership.band.name}</strong>
+                <p className="muted-text">Werk hier je instrument en kapelgegevens bij.</p>
+              </div>
+              <Badge tone="brand">{formatRoleLabel(activeMembership.role)}</Badge>
+            </div>
+
+            <form onSubmit={(event) => void handleMembershipSubmit(event)} className="performance-form">
+              <section className="performance-form__section">
+                <FormField label="Instrument">
+                  <Input
+                    type="text"
+                    value={instrument}
+                    onChange={(event) => setInstrument(event.target.value)}
+                    maxLength={80}
+                    placeholder="Bijvoorbeeld: trompet"
+                  />
+                </FormField>
+              </section>
 
               <Button type="submit" disabled={isSavingMembership} fullWidth>
                 {isSavingMembership ? 'Bezig met opslaan…' : 'Instrument opslaan'}
               </Button>
             </form>
 
-            <dl>
-              <div>
-                <dt>Kapel</dt>
-                <dd>{activeMembership.band.name}</dd>
+            <div className="profile-info-grid">
+              <div className="performance-meta-card">
+                <span className="performance-meta-card__label">Kapel</span>
+                <strong>{activeMembership.band.name}</strong>
               </div>
-              <div>
-                <dt>Rol</dt>
-                <dd>{activeMembership.role}</dd>
+              <div className="performance-meta-card">
+                <span className="performance-meta-card__label">Rol</span>
+                <strong>{formatRoleLabel(activeMembership.role)}</strong>
               </div>
-              <div>
-                <dt>Instrument</dt>
-                <dd>{activeMembership.instrument ?? 'Nog niet ingevuld'}</dd>
+              <div className="performance-meta-card performance-meta-card--wide">
+                <span className="performance-meta-card__label">Instrument</span>
+                <strong>{activeMembership.instrument ?? 'Nog niet ingevuld'}</strong>
               </div>
-            </dl>
+            </div>
 
             <Button
               type="button"
@@ -191,4 +219,17 @@ export function ProfilePage() {
       </PageCard>
     </div>
   )
+}
+
+function formatRoleLabel(role: 'member' | 'planner' | 'admin' | 'owner') {
+  switch (role) {
+    case 'member':
+      return 'Lid'
+    case 'planner':
+      return 'Planner'
+    case 'admin':
+      return 'Admin'
+    case 'owner':
+      return 'Eigenaar'
+  }
 }

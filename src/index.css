@@ -1468,3 +1468,63 @@ input[type='radio'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.profile-hero__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: var(--color-text-on-brand);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-hero__content {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.profile-hero__content strong {
+  font-size: var(--font-size-lg);
+}
+
+.profile-info-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.profile-user-id {
+  overflow-wrap: anywhere;
+}
+
+.profile-band-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+@media (min-width: 720px) {
+  .profile-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-band-header,
+  .profile-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
