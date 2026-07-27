@@ -22,7 +22,7 @@ import {
 const roleOptions: Array<BandMembership['role']> = ['member', 'planner', 'admin', 'owner']
 
 export function MembersPage() {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const { activeMembership } = useBand()
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -61,7 +61,7 @@ export function MembersPage() {
   }
 
   async function handleDeactivate(member: BandMemberRecord) {
-    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} wilt deactiveren?`)) {
+    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} uit deze kapel wilt verwijderen?`)) {
       return
     }
 
@@ -74,7 +74,7 @@ export function MembersPage() {
         bandId: member.band_id,
         userId: member.user_id,
       })
-      setMessage('Lid gedeactiveerd.')
+      setMessage('Lid verwijderd uit kapel.')
       await membersQuery.refetch()
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Deactiveren mislukt.')
@@ -144,11 +144,16 @@ export function MembersPage() {
       <div className="members-list">
         {membersQuery.data?.map((member) => {
           const isPending = pendingKey?.includes(member.user_id) ?? false
+          const isCurrentUser = member.user_id === user?.id
           const canAssignOwner = isSuperadmin || activeMembership?.role === 'owner'
           const roleChoices = canAssignOwner
             ? roleOptions
             : roleOptions.filter((role) => role !== 'owner')
           const canChangeRole = isSuperadmin || canAssignOwner || member.role !== 'owner'
+          const canRemoveMember =
+            member.is_active &&
+            !isCurrentUser &&
+            (isSuperadmin || activeMembership?.role === 'owner' || member.role !== 'owner')
 
           return (
             <div key={member.membership_id} className="member-card member-card--enhanced">
@@ -169,19 +174,19 @@ export function MembersPage() {
               </div>
 
               <div className="member-card__details-grid">
-                <div>
+                <div className="member-card__detail-item">
                   <span className="member-card__label">Kapel</span>
                   <p>{member.band_name}</p>
                 </div>
-                <div>
+                <div className="member-card__detail-item">
                   <span className="member-card__label">Instrument</span>
                   <p>{member.instrument ?? 'Niet ingevuld'}</p>
                 </div>
-                <div>
+                <div className="member-card__detail-item">
                   <span className="member-card__label">Lid sinds</span>
                   <p>{new Date(member.joined_at).toLocaleDateString()}</p>
                 </div>
-                <div>
+                <div className="member-card__detail-item">
                   <span className="member-card__label">Vertrokken</span>
                   <p>{member.left_at ? new Date(member.left_at).toLocaleDateString() : '—'}</p>
                 </div>
@@ -205,15 +210,21 @@ export function MembersPage() {
                 </FormField>
 
                 {member.is_active ? (
-                  <Button
-                    type="button"
-                    variant="danger"
-                    disabled={isPending}
-                    onClick={() => void handleDeactivate(member)}
-                    fullWidth
-                  >
-                    Deactiveren
-                  </Button>
+                  canRemoveMember ? (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      disabled={isPending}
+                      onClick={() => void handleDeactivate(member)}
+                      fullWidth
+                    >
+                      Verwijderen
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="secondary" disabled fullWidth>
+                      Niet verwijderbaar
+                    </Button>
+                  )
                 ) : (
                   <Button type="button" disabled={isPending} onClick={() => void handleReactivate(member)} fullWidth>
                     Heractiveren
