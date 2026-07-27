@@ -891,3 +891,121 @@ input[type='radio'] {
   background: var(--color-danger-100);
   color: var(--color-danger-700);
 }
+
+.home-link-action {
+  color: var(--color-brand-500);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.home-performance-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.home-performance-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.home-performance-card__date {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  min-width: 4.5rem;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-background-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+
+.home-performance-card__date span {
+  color: var(--color-brand-500);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.home-performance-card__date strong {
+  font-size: var(--font-size-2xl);
+  line-height: 1;
+}
+
+.home-performance-card__content {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.home-performance-card__topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-performance-card__topline strong {
+  font-size: var(--font-size-lg);
+}
+
+.home-performance-card__meta {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.home-performance-card__deadline {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-success-50);
+  color: var(--color-success-700);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.home-create-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3.25rem;
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: var(--color-text-on-brand);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+
+.home-create-button:hover {
+  color: var(--color-text-on-brand);
+}
+
+@media (max-width: 640px) {
+  .home-performance-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .home-performance-card__date {
+    min-width: 0;
+    width: 4.5rem;
+  }
+
+  .home-performance-card__topline {
+    flex-direction: column;
+  }
+}
