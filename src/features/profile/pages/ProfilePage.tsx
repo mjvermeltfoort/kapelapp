@@ -1,18 +1,21 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
-import { FormField, Input } from '../../../components/FormField'
+import { FormField, Input, Select } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
 
 export function ProfilePage() {
   const { profile, saveProfile, signOut, user } = useAuth()
   const { activeMembership, leaveActiveBand, refreshBands, saveMyInstrument } = useBand()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
-  const [instrument, setInstrument] = useState(activeMembership?.instrument ?? '')
+  const [selectedInstrument, setSelectedInstrument] = useState('')
+  const [customInstrument, setCustomInstrument] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [membershipError, setMembershipError] = useState<string | null>(null)
@@ -22,13 +25,39 @@ export function ProfilePage() {
   const [isLeavingBand, setIsLeavingBand] = useState(false)
   const [isConfirmingLeave, setIsConfirmingLeave] = useState(false)
 
+  const instrumentsQuery = useQuery({
+    queryKey: ['band-instruments', activeMembership?.band.id, false],
+    queryFn: async () => listBandInstruments(activeMembership!.band.id),
+    enabled: Boolean(activeMembership?.band.id),
+  })
+
   useEffect(() => {
     setDisplayName(profile?.display_name ?? '')
   }, [profile?.display_name])
 
+  const activeInstrumentNames = useMemo(
+    () => (instrumentsQuery.data ?? []).map((instrument) => instrument.name),
+    [instrumentsQuery.data],
+  )
+
   useEffect(() => {
-    setInstrument(activeMembership?.instrument ?? '')
-  }, [activeMembership?.instrument])
+    const instrument = activeMembership?.instrument ?? ''
+
+    if (!instrument) {
+      setSelectedInstrument('')
+      setCustomInstrument('')
+      return
+    }
+
+    if (activeInstrumentNames.includes(instrument)) {
+      setSelectedInstrument(instrument)
+      setCustomInstrument('')
+      return
+    }
+
+    setSelectedInstrument('anders')
+    setCustomInstrument(instrument)
+  }, [activeInstrumentNames, activeMembership?.instrument])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -60,7 +89,7 @@ export function ProfilePage() {
     try {
       await saveMyInstrument({
         bandId: activeMembership.band.id,
-        instrument,
+        instrument: selectedInstrument === 'anders' ? customInstrument : selectedInstrument,
       })
       await refreshBands()
       setMembershipMessage('Instrument opgeslagen.')
@@ -156,21 +185,37 @@ export function ProfilePage() {
             <form onSubmit={(event) => void handleMembershipSubmit(event)} className="performance-form">
               <section className="performance-form__section">
                 <FormField label="Instrument">
-                  <Input
-                    type="text"
-                    value={instrument}
-                    onChange={(event) => setInstrument(event.target.value)}
-                    maxLength={80}
-                    placeholder="Bijvoorbeeld: trompet"
-                  />
+                  <Select
+                    value={selectedInstrument}
+                    onChange={(event) => setSelectedInstrument(event.target.value)}
+                  >
+                    <option value="">Geen instrument</option>
+                    {activeInstrumentNames.map((instrument) => (
+                      <option key={instrument} value={instrument}>
+                        {instrument}
+                      </option>
+                    ))}
+                    <option value="anders">Anders</option>
+                  </Select>
                 </FormField>
+
+                {selectedInstrument === 'anders' ? (
+                  <FormField label="Ander instrument">
+                    <Input
+                      type="text"
+                      value={customInstrument}
+                      onChange={(event) => setCustomInstrument(event.target.value)}
+                      maxLength={80}
+                      placeholder="Bijvoorbeeld: trompet"
+                    />
+                  </FormField>
+                ) : null}
               </section>
 
               <Button type="submit" disabled={isSavingMembership} fullWidth>
                 {isSavingMembership ? 'Bezig met opslaan…' : 'Instrument opslaan'}
               </Button>
             </form>
-
 
             {isConfirmingLeave ? (
               <div className="stack-sm">

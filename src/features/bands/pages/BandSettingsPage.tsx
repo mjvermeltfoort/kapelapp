@@ -7,6 +7,7 @@ import { FormField, Input, Textarea } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { isAdminRole } from '../../../lib/roles'
 import { getCurrentBandInvite, regenerateBandInvite } from '../../invites/api/invites'
+import { createBandInstrument, deactivateBandInstrument, listBandInstruments, updateBandInstrument } from '../api/instruments'
 import { updateBand } from '../api/bands'
 import { useBand } from '../hooks/useBand'
 
@@ -16,12 +17,18 @@ export function BandSettingsPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [showMemberResponses, setShowMemberResponses] = useState(false)
+  const [newInstrumentName, setNewInstrumentName] = useState('')
+  const [editingInstrumentId, setEditingInstrumentId] = useState<string | null>(null)
+  const [editingInstrumentName, setEditingInstrumentName] = useState('')
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [inviteMessage, setInviteMessage] = useState<string | null>(null)
   const [inviteError, setInviteError] = useState<string | null>(null)
+  const [instrumentMessage, setInstrumentMessage] = useState<string | null>(null)
+  const [instrumentError, setInstrumentError] = useState<string | null>(null)
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isRegeneratingInvite, setIsRegeneratingInvite] = useState(false)
+  const [isSavingInstrument, setIsSavingInstrument] = useState(false)
 
   useEffect(() => {
     setName(activeMembership?.band.name ?? '')
@@ -30,6 +37,25 @@ export function BandSettingsPage() {
     setInviteMessage(null)
     setInviteError(null)
   }, [activeMembership])
+
+  const bandId = activeMembership?.band.id ?? ''
+  const canManageBand = isAdminRole(activeMembership?.role ?? '')
+  const inviteQueryKey = ['current-band-invite', bandId]
+  const instrumentQueryKey = ['band-instruments', bandId, true]
+
+  const inviteQuery = useQuery({
+    queryKey: inviteQueryKey,
+    queryFn: async () => getCurrentBandInvite(bandId),
+    enabled: canManageBand && Boolean(bandId),
+  })
+
+  const instrumentsQuery = useQuery({
+    queryKey: instrumentQueryKey,
+    queryFn: async () => listBandInstruments(bandId, true),
+    enabled: canManageBand && Boolean(bandId),
+  })
+
+  const joinUrl = inviteQuery.data ? `${window.location.origin}/join/${inviteQuery.data.token}` : ''
 
   async function handleSettingsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -58,16 +84,6 @@ export function BandSettingsPage() {
     }
   }
 
-  const bandId = activeMembership?.band.id ?? ''
-  const canManageBand = isAdminRole(activeMembership?.role ?? '')
-  const inviteQueryKey = ['current-band-invite', bandId]
-  const inviteQuery = useQuery({
-    queryKey: inviteQueryKey,
-    queryFn: async () => getCurrentBandInvite(bandId),
-    enabled: canManageBand && Boolean(bandId),
-  })
-  const joinUrl = inviteQuery.data ? `${window.location.origin}/join/${inviteQuery.data.token}` : ''
-
   if (!activeMembership) {
     return (
       <PageCard title="Kapelinstellingen">
@@ -93,7 +109,7 @@ export function BandSettingsPage() {
   }
 
   async function handleRegenerateInvite() {
-    if (!activeMembership || !canManageBand) {
+    if (!canManageBand) {
       return
     }
 
@@ -102,7 +118,7 @@ export function BandSettingsPage() {
     setIsRegeneratingInvite(true)
 
     try {
-      const invite = await regenerateBandInvite(activeMembership.band.id)
+      const invite = await regenerateBandInvite(activeMembership!.band.id)
       const nextJoinUrl = `${window.location.origin}/join/${invite.token}`
 
       queryClient.setQueryData(inviteQueryKey, invite)
@@ -117,6 +133,63 @@ export function BandSettingsPage() {
       setInviteError(submitError instanceof Error ? submitError.message : 'Nieuwe link maken mislukt.')
     } finally {
       setIsRegeneratingInvite(false)
+    }
+  }
+
+  async function handleAddInstrument(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!canManageBand) {
+      return
+    }
+
+    setInstrumentMessage(null)
+    setInstrumentError(null)
+    setIsSavingInstrument(true)
+
+    try {
+      await createBandInstrument(activeMembership!.band.id, newInstrumentName)
+      setNewInstrumentName('')
+      await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
+      setInstrumentMessage('Instrument toegevoegd.')
+    } catch (submitError) {
+      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument toevoegen mislukt.')
+    } finally {
+      setIsSavingInstrument(false)
+    }
+  }
+
+  async function handleSaveInstrument(instrumentId: string) {
+    setInstrumentMessage(null)
+    setInstrumentError(null)
+    setIsSavingInstrument(true)
+
+    try {
+      await updateBandInstrument(instrumentId, editingInstrumentName)
+      setEditingInstrumentId(null)
+      setEditingInstrumentName('')
+      await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
+      setInstrumentMessage('Instrument bijgewerkt.')
+    } catch (submitError) {
+      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument bijwerken mislukt.')
+    } finally {
+      setIsSavingInstrument(false)
+    }
+  }
+
+  async function handleDeactivateInstrument(instrumentId: string) {
+    setInstrumentMessage(null)
+    setInstrumentError(null)
+    setIsSavingInstrument(true)
+
+    try {
+      await deactivateBandInstrument(instrumentId)
+      await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
+      setInstrumentMessage('Instrument gedeactiveerd.')
+    } catch (submitError) {
+      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument deactiveren mislukt.')
+    } finally {
+      setIsSavingInstrument(false)
     }
   }
 
@@ -230,6 +303,93 @@ export function BandSettingsPage() {
 
           {inviteMessage ? <Alert tone="success">{inviteMessage}</Alert> : null}
           {inviteError ? <Alert tone="error">{inviteError}</Alert> : null}
+        </section>
+      ) : null}
+
+      {canManageBand ? (
+        <section className="performance-form__section">
+          <div className="invite-header">
+            <Badge tone="brand">Instrumenten</Badge>
+            <p className="muted-text">Beheer actieve instrumenten voor deze kapel.</p>
+          </div>
+
+          <form onSubmit={(event) => void handleAddInstrument(event)} className="performance-form">
+            <FormField label="Nieuw instrument">
+              <Input
+                type="text"
+                value={newInstrumentName}
+                onChange={(event) => setNewInstrumentName(event.target.value)}
+                maxLength={80}
+                placeholder="Bijvoorbeeld: Trompet"
+              />
+            </FormField>
+            <Button type="submit" disabled={isSavingInstrument} fullWidth>
+              Instrument toevoegen
+            </Button>
+          </form>
+
+          {instrumentMessage ? <Alert tone="success">{instrumentMessage}</Alert> : null}
+          {instrumentError ? <Alert tone="error">{instrumentError}</Alert> : null}
+
+          <div className="members-list">
+            {instrumentsQuery.data?.map((instrument) => (
+              <div key={instrument.id} className="member-card member-card--enhanced">
+                <div className="member-card__topline">
+                  <strong>{instrument.name}</strong>
+                  <Badge tone={instrument.is_active ? 'success' : 'neutral'}>
+                    {instrument.is_active ? 'Actief' : 'Inactief'}
+                  </Badge>
+                </div>
+
+                {editingInstrumentId === instrument.id ? (
+                  <div className="member-card__button-stack">
+                    <FormField label="Instrumentnaam">
+                      <Input
+                        type="text"
+                        value={editingInstrumentName}
+                        onChange={(event) => setEditingInstrumentName(event.target.value)}
+                        maxLength={80}
+                      />
+                    </FormField>
+                    <Button type="button" disabled={isSavingInstrument} onClick={() => void handleSaveInstrument(instrument.id)} fullWidth>
+                      Opslaan
+                    </Button>
+                    <Button type="button" variant="ghost" disabled={isSavingInstrument} onClick={() => setEditingInstrumentId(null)} fullWidth>
+                      Annuleren
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="member-card__button-stack" role="group" aria-label={`Acties voor instrument ${instrument.name}`}>
+                    {instrument.is_active ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isSavingInstrument}
+                        onClick={() => {
+                          setEditingInstrumentId(instrument.id)
+                          setEditingInstrumentName(instrument.name)
+                        }}
+                        fullWidth
+                      >
+                        Naam wijzigen
+                      </Button>
+                    ) : null}
+                    {instrument.is_active ? (
+                      <Button
+                        type="button"
+                        variant="danger"
+                        disabled={isSavingInstrument}
+                        onClick={() => void handleDeactivateInstrument(instrument.id)}
+                        fullWidth
+                      >
+                        Deactiveren
+                      </Button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </section>
       ) : null}
     </PageCard>
