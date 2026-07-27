@@ -1776,3 +1776,46 @@ input[type='radio'] {
     transform: none;
   }
 }
+
+.tab-link:focus-visible,
+.nav-link:focus-visible,
+.icon-link-button:focus-visible,
+.home-create-button:focus-visible,
+.performance-secondary-link:focus-visible,
+.band-trigger:focus-visible,
+.nav-icon-link:focus-visible,
+.brand-panel__item:focus-visible,
+.brand-panel__link:focus-visible,
+.response-option:focus-within,
+.band-switch:focus-within .band-switch__track,
+.calendar-day__button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.response-selector legend {
+  margin-bottom: var(--space-1);
+}
+
+.response-option:focus-within {
+  border-color: var(--color-brand-200);
+}
+
+@media (prefers-contrast: more) {
+  .alert,
+  .empty-state,
+  .page-card,
+  .list-card-link,
+  .invite-card,
+  .member-card,
+  .home-performance-card,
+  .performance-meta-card,
+  .performance-description-card,
+  .band-tile,
+  .tab-link,
+  .nav-link,
+  .response-option,
+  .ui-input {
+    border-width: 2px;
+  }
+}

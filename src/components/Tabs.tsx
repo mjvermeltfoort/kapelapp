@@ -15,7 +15,7 @@ type TabLinkProps = {
 
 export function Tabs({ children, ...props }: TabsProps) {
   return (
-    <nav className="tab-nav" {...props}>
+    <nav className="tab-nav" role="tablist" {...props}>
       {children}
     </nav>
   )
@@ -23,7 +23,13 @@ export function Tabs({ children, ...props }: TabsProps) {
 
 export function TabLink({ to, isActive = false, replace = false, children }: TabLinkProps) {
   return (
-    <Link to={to} replace={replace} className={isActive ? 'tab-link tab-link--active' : 'tab-link'}>
+    <Link
+      to={to}
+      replace={replace}
+      role="tab"
+      aria-selected={isActive}
+      className={isActive ? 'tab-link tab-link--active' : 'tab-link'}
+    >
       {children}
     </Link>
   )

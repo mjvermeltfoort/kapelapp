@@ -136,6 +136,11 @@ export function AppLayout() {
                 onClick={() => setIsBandMenuOpen((current) => !current)}
                 aria-expanded={isBandMenuOpen}
                 aria-haspopup="menu"
+                aria-label={
+                  activeMembership
+                    ? `Actieve kapel: ${activeMembership.band.name}. Open kapelmenu`
+                    : 'Open kapelmenu'
+                }
               >
                 <img src="/favicon.svg" alt="Kapelapp logo" className="brand-logo" />
                 <div className="brand-text">
@@ -147,7 +152,7 @@ export function AppLayout() {
               </button>
 
               {isBandMenuOpen ? (
-                <div className="brand-panel" role="menu">
+                <div className="brand-panel" role="menu" aria-label="Kapelmenu">
                   <div className="brand-panel__section">
                     {memberships.map((membership) => (
                       <button
@@ -159,6 +164,7 @@ export function AppLayout() {
                             : 'brand-panel__item'
                         }
                         onClick={() => handleBandSelect(membership.band_id)}
+                        aria-label={`Kies kapel ${membership.band.name}`}
                       >
                         <strong>{membership.band.name}</strong>
                         <span>{membership.role}</span>

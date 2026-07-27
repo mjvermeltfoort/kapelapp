@@ -9,9 +9,15 @@ type AlertProps = HTMLAttributes<HTMLParagraphElement> & {
 
 export function Alert({ children, className, tone = 'info', role, ...props }: AlertProps) {
   const classes = ['alert', `alert--${tone}`, className].filter(Boolean).join(' ')
+  const computedRole = role ?? (tone === 'error' ? 'alert' : 'status')
 
   return (
-    <p role={role ?? (tone === 'error' ? 'alert' : undefined)} className={classes} {...props}>
+    <p
+      role={computedRole}
+      aria-live={tone === 'error' ? 'assertive' : 'polite'}
+      className={classes}
+      {...props}
+    >
       {children}
     </p>
   )
