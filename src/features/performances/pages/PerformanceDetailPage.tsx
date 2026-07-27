@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
@@ -10,11 +10,13 @@ import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
 import { deletePerformance, getPerformance } from '../api/performances'
+import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 
 export function PerformanceDetailPage() {
   const navigate = useNavigate()
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
+  const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
   const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -81,7 +83,8 @@ export function PerformanceDetailPage() {
   }
 
   return (
-    <div className="page-grid">
+    <>
+      <div className="page-grid">
       <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
         <div className="performance-hero">
           <div className="performance-hero__status-row">
@@ -177,7 +180,16 @@ export function PerformanceDetailPage() {
           }}
         />
       </PageCard>
-    </div>
+      </div>
+
+      <PlannerOverviewModal
+        performanceId={performance.id}
+        performance={performance}
+        canViewOverview={canManagePerformances}
+        isOpen={Boolean(plannerOverviewMatch)}
+        onClose={() => void navigate(`/performances/${performance.id}`, { replace: true })}
+      />
+    </>
   )
 }
 

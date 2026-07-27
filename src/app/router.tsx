@@ -11,7 +11,6 @@ import {
   PerformanceDetailPage,
   PerformanceEditPage,
   PerformancesPage,
-  PlannerOverviewPage,
   ProfilePage,
   ProfileSetupPage,
   RouterElement,
@@ -54,7 +53,7 @@ export const router = createBrowserRouter([
       { path: 'performances/:performanceId/edit', element: <RouterElement><PerformanceEditPage /></RouterElement> },
       {
         path: 'performances/:performanceId/planner-overview',
-        element: <RouterElement><PlannerOverviewPage /></RouterElement>,
+        element: <RouterElement><PerformanceDetailPage /></RouterElement>,
       },
       { path: 'admin', element: <RouterElement><AdminPage /></RouterElement> },
       { path: 'settings/band', element: <Navigate to="/admin?tab=band" replace /> },
