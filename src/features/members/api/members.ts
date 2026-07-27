@@ -80,3 +80,17 @@ export async function reactivateBandMember(input: {
     throw error
   }
 }
+
+export async function deleteBandMember(input: {
+  bandId: string
+  userId: string
+}): Promise<void> {
+  const { error } = await supabase.rpc('delete_band_member', {
+    p_band_id: input.bandId,
+    p_user_id: input.userId,
+  })
+
+  if (error) {
+    throw error
+  }
+}

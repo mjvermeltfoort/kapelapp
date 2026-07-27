@@ -12,6 +12,7 @@ import type { BandMembership } from '../../bands/api/bands'
 import { useBand } from '../../bands/hooks/useBand'
 import {
   deactivateBandMember,
+  deleteBandMember,
   listAllMembers,
   listBandMembers,
   reactivateBandMember,
@@ -61,7 +62,7 @@ export function MembersPage() {
   }
 
   async function handleDeactivate(member: BandMemberRecord) {
-    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} uit deze kapel wilt verwijderen?`)) {
+    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} wilt deactiveren?`)) {
       return
     }
 
@@ -74,10 +75,37 @@ export function MembersPage() {
         bandId: member.band_id,
         userId: member.user_id,
       })
-      setMessage('Lid verwijderd uit kapel.')
+      setMessage('Lid gedeactiveerd.')
       await membersQuery.refetch()
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Deactiveren mislukt.')
+    } finally {
+      setPendingKey(null)
+    }
+  }
+
+  async function handleDelete(member: BandMemberRecord) {
+    if (
+      !window.confirm(
+        `Weet je zeker dat je ${member.display_name ?? member.email} definitief uit deze kapel wilt verwijderen?`,
+      )
+    ) {
+      return
+    }
+
+    setMessage(null)
+    setError(null)
+    setPendingKey(`delete:${member.user_id}`)
+
+    try {
+      await deleteBandMember({
+        bandId: member.band_id,
+        userId: member.user_id,
+      })
+      setMessage('Lid definitief verwijderd uit kapel.')
+      await membersQuery.refetch()
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Verwijderen mislukt.')
     } finally {
       setPendingKey(null)
     }
@@ -151,7 +179,6 @@ export function MembersPage() {
             : roleOptions.filter((role) => role !== 'owner')
           const canChangeRole = isSuperadmin || canAssignOwner || member.role !== 'owner'
           const canRemoveMember =
-            member.is_active &&
             !isCurrentUser &&
             (isSuperadmin || activeMembership?.role === 'owner' || member.role !== 'owner')
 
@@ -209,25 +236,37 @@ export function MembersPage() {
                   </Select>
                 </FormField>
 
-                {member.is_active ? (
-                  canRemoveMember ? (
+                {canRemoveMember ? (
+                  <div className="member-card__button-stack">
+                    {member.is_active ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isPending}
+                        onClick={() => void handleDeactivate(member)}
+                        fullWidth
+                      >
+                        Deactiveren
+                      </Button>
+                    ) : (
+                      <Button type="button" disabled={isPending} onClick={() => void handleReactivate(member)} fullWidth>
+                        Heractiveren
+                      </Button>
+                    )}
+
                     <Button
                       type="button"
                       variant="danger"
                       disabled={isPending}
-                      onClick={() => void handleDeactivate(member)}
+                      onClick={() => void handleDelete(member)}
                       fullWidth
                     >
-                      Verwijderen
+                      Definitief verwijderen
                     </Button>
-                  ) : (
-                    <Button type="button" variant="secondary" disabled fullWidth>
-                      Niet verwijderbaar
-                    </Button>
-                  )
+                  </div>
                 ) : (
-                  <Button type="button" disabled={isPending} onClick={() => void handleReactivate(member)} fullWidth>
-                    Heractiveren
+                  <Button type="button" variant="secondary" disabled fullWidth>
+                    Niet verwijderbaar
                   </Button>
                 )}
               </div>

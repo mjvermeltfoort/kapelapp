@@ -1431,6 +1431,11 @@ input[type='radio'] {
   width: 100%;
 }
 
+.member-card__button-stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .member-card__identity {
   display: flex;
   align-items: center;
