@@ -127,7 +127,7 @@ export function PerformancesPage() {
 
         {hasMorePerformances ? (
           <Button type="button" variant="secondary" onClick={() => setVisibleCount((current) => current + 3)} fullWidth>
-            Toon volgende 3 optredens
+            Meer tonen
           </Button>
         ) : null}
 
