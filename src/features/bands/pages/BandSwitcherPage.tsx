@@ -11,6 +11,8 @@ import { useBand } from '../hooks/useBand'
 
 export function BandSwitcherPage() {
   const { activeBandId, memberships, isLoading, error, setActiveBandId, createOwnedBand } = useBand()
+  const activeMembership = memberships.find((membership) => membership.band_id === activeBandId)
+  const canManageBand = ['admin', 'owner'].includes(activeMembership?.role ?? '')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
@@ -82,9 +84,11 @@ export function BandSwitcherPage() {
             <Link to="/performances" className="performance-secondary-link">
               Ga naar optredens
             </Link>
-            <Link to="/settings/band" className="performance-secondary-link">
-              Kapelinstellingen
-            </Link>
+            {canManageBand ? (
+              <Link to="/settings/band" className="performance-secondary-link">
+                Kapelinstellingen
+              </Link>
+            ) : null}
           </div>
         ) : null}
       </PageCard>
