@@ -59,21 +59,33 @@ export function PerformanceResponseForm({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)}>
-      <fieldset className="radio-group">
+      <fieldset className="response-selector">
         <legend>Jouw reactie</legend>
 
-        {options.map((option) => (
-          <label key={option.value} className="radio-option">
-            <input
-              type="radio"
-              name="response"
-              value={option.value}
-              checked={response === option.value}
-              onChange={() => setResponse(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
-        ))}
+        <div className="response-selector__grid">
+          {options.map((option) => (
+            <label
+              key={option.value}
+              className={
+                response === option.value
+                  ? `response-option response-option--${option.value} response-option--selected`
+                  : `response-option response-option--${option.value}`
+              }
+            >
+              <input
+                type="radio"
+                name="response"
+                value={option.value}
+                checked={response === option.value}
+                onChange={() => setResponse(option.value)}
+              />
+              <span className="response-option__icon" aria-hidden="true">
+                {option.value === 'yes' ? '✓' : option.value === 'maybe' ? '?' : '×'}
+              </span>
+              <span className="response-option__label">{option.label}</span>
+            </label>
+          ))}
+        </div>
       </fieldset>
 
       {response !== 'yes' ? (
@@ -93,7 +105,7 @@ export function PerformanceResponseForm({
       </Button>
 
       {currentResponse ? (
-        <p className="muted-text">
+        <p className="response-form__meta muted-text">
           Laatste wijziging: {new Date(currentResponse.responded_at).toLocaleString()}
         </p>
       ) : null}
