@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
 import { FormField, Input } from '../../../components/FormField'
@@ -93,32 +94,39 @@ export function InvitesPage() {
   return (
     <div className="page-grid">
       <PageCard
-        title="Nieuwe uitnodigingslink"
-        description="Admins en owners kunnen leden met een veilige link laten deelnemen. Nieuwe links geven standaard rol member."
+        title="Uitnodigingslinks"
+        description="Maak een link voor nieuwe leden en deel die veilig met je kapel."
       >
+        <div className="invite-header">
+          <Badge tone="brand">Nieuwe leden</Badge>
+          <p className="muted-text">Nieuwe links geven standaard rol member.</p>
+        </div>
+
         {!canManageInvites ? <Alert tone="info">Alleen admins en owners kunnen uitnodigingen beheren.</Alert> : null}
 
-        <form onSubmit={(event) => void handleCreateInvite(event)}>
-          <FormField label="Vervaldatum">
-            <Input
-              type="datetime-local"
-              value={expiresAt}
-              onChange={(event) => setExpiresAt(event.target.value)}
-              disabled={!canManageInvites}
-            />
-          </FormField>
+        <form onSubmit={(event) => void handleCreateInvite(event)} className="performance-form">
+          <section className="performance-form__section">
+            <FormField label="Vervaldatum" hint="Optioneel">
+              <Input
+                type="datetime-local"
+                value={expiresAt}
+                onChange={(event) => setExpiresAt(event.target.value)}
+                disabled={!canManageInvites}
+              />
+            </FormField>
 
-          <FormField label="Maximaal aantal keer te gebruiken">
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              value={maxUses}
-              onChange={(event) => setMaxUses(event.target.value)}
-              disabled={!canManageInvites}
-              placeholder="Leeg = onbeperkt"
-            />
-          </FormField>
+            <FormField label="Maximaal aantal keer te gebruiken" hint="Leeg = onbeperkt">
+              <Input
+                type="number"
+                min={1}
+                step={1}
+                value={maxUses}
+                onChange={(event) => setMaxUses(event.target.value)}
+                disabled={!canManageInvites}
+                placeholder="Leeg = onbeperkt"
+              />
+            </FormField>
+          </section>
 
           <Button type="submit" disabled={isSubmitting || !canManageInvites} fullWidth>
             {isSubmitting ? 'Bezig met aanmaken…' : 'Uitnodigingslink maken'}
@@ -126,9 +134,11 @@ export function InvitesPage() {
         </form>
 
         {latestJoinUrl ? (
-          <FormField label="Laatst aangemaakte link">
-            <Input type="text" value={latestJoinUrl} readOnly />
-          </FormField>
+          <div className="invite-link-card">
+            <FormField label="Laatst aangemaakte link">
+              <Input type="text" value={latestJoinUrl} readOnly />
+            </FormField>
+          </div>
         ) : null}
 
         {message ? <Alert tone="success">{message}</Alert> : null}
@@ -137,7 +147,7 @@ export function InvitesPage() {
 
       <PageCard
         title="Bestaande uitnodigingen"
-        description="Actieve en ingetrokken links voor huidige kapel. Token zelf wordt niet opnieuw getoond."
+        description="Actieve en ingetrokken links voor huidige kapel."
       >
         {invitesQuery.isLoading ? <LoadingState>Uitnodigingen worden geladen…</LoadingState> : null}
         {invitesQuery.error instanceof Error ? <Alert tone="error">{invitesQuery.error.message}</Alert> : null}
@@ -146,17 +156,38 @@ export function InvitesPage() {
           <EmptyState>Nog geen uitnodigingen aangemaakt.</EmptyState>
         ) : null}
 
-        <div className="stack-sm">
+        <div className="invite-list">
           {invitesQuery.data?.map((invite) => (
-            <div key={invite.id} className="invite-card">
-              <div>
-                <strong>{invite.is_active ? 'Actief' : 'Ingetrokken'}</strong>
-                <p>Gebruik: {invite.use_count}{invite.max_uses ? ` / ${invite.max_uses}` : ''}</p>
-                <p>Vervalt: {invite.expires_at ? new Date(invite.expires_at).toLocaleString() : 'Niet'}</p>
-                <p>
-                  Laatst gebruikt:{' '}
-                  {invite.last_used_at ? new Date(invite.last_used_at).toLocaleString() : 'Nog niet'}
-                </p>
+            <div key={invite.id} className="invite-card invite-card--enhanced">
+              <div className="invite-card__content">
+                <div className="invite-card__topline">
+                  <strong>{invite.is_active ? 'Actieve link' : 'Ingetrokken link'}</strong>
+                  <Badge tone={invite.is_active ? 'success' : 'neutral'}>
+                    {invite.is_active ? 'Actief' : 'Ingetrokken'}
+                  </Badge>
+                </div>
+
+                <div className="invite-card__details">
+                  <div>
+                    <span className="member-card__label">Gebruik</span>
+                    <p>
+                      {invite.use_count}
+                      {invite.max_uses ? ` / ${invite.max_uses}` : ' · onbeperkt'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="member-card__label">Vervalt</span>
+                    <p>{invite.expires_at ? new Date(invite.expires_at).toLocaleString() : 'Nooit'}</p>
+                  </div>
+                  <div>
+                    <span className="member-card__label">Laatst gebruikt</span>
+                    <p>{invite.last_used_at ? new Date(invite.last_used_at).toLocaleString() : 'Nog niet'}</p>
+                  </div>
+                  <div>
+                    <span className="member-card__label">Gemaakt</span>
+                    <p>{new Date(invite.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
               </div>
 
               <Button
@@ -164,6 +195,7 @@ export function InvitesPage() {
                 variant="secondary"
                 disabled={!invite.is_active || !canManageInvites}
                 onClick={() => void handleRevokeInvite(invite.id)}
+                fullWidth
               >
                 Intrekken
               </Button>
