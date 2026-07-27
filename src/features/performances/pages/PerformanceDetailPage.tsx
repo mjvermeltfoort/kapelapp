@@ -1,16 +1,14 @@
-import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
-import { Button } from '../../../components/Button'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
-import { deletePerformance, getPerformance } from '../api/performances'
+import { getPerformance } from '../api/performances'
 import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 
 export function PerformanceDetailPage() {
@@ -19,10 +17,6 @@ export function PerformanceDetailPage() {
   const { activeMembership } = useBand()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
   const canManagePerformances = canManage(activeMembership?.role)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
-  const queryClient = useQueryClient()
 
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
@@ -64,21 +58,6 @@ export function PerformanceDetailPage() {
 
   const performance = performanceQuery.data
 
-  async function handleDelete() {
-    setDeleteError(null)
-    setIsDeleting(true)
-    setIsConfirmingDelete(false)
-
-    try {
-      await deletePerformance(performance.id)
-      await queryClient.invalidateQueries({ queryKey: ['performances', activeMembership?.band.id] })
-      await navigate('/performances', { replace: true })
-    } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : 'Verwijderen mislukt.')
-      setIsDeleting(false)
-    }
-  }
-
   return (
     <>
       <div className="page-grid">
@@ -107,10 +86,12 @@ export function PerformanceDetailPage() {
               </strong>
             </div>
 
-            <div className="performance-meta-card">
-              <span className="performance-meta-card__label">Verzamelen</span>
-              <strong>{performance.gather_time?.slice(0, 5) ?? 'Niet ingevuld'}</strong>
-            </div>
+            {performance.gather_time ? (
+              <div className="performance-meta-card">
+                <span className="performance-meta-card__label">Verzamelen</span>
+                <strong>{performance.gather_time.slice(0, 5)}</strong>
+              </div>
+            ) : null}
 
             <div className="performance-meta-card performance-meta-card--wide">
               <span className="performance-meta-card__label">Locatie</span>
@@ -118,10 +99,12 @@ export function PerformanceDetailPage() {
             </div>
           </div>
 
-          <div className="performance-description-card">
-            <span className="performance-meta-card__label">Meer informatie</span>
-            <p>{performance.description ?? 'Geen omschrijving toegevoegd.'}</p>
-          </div>
+          {performance.description?.trim() ? (
+            <div className="performance-description-card">
+              <span className="performance-meta-card__label">Meer informatie</span>
+              <p>{performance.description}</p>
+            </div>
+          ) : null}
 
           <div className="performance-actions">
             {performance.map_url ? (
@@ -132,51 +115,17 @@ export function PerformanceDetailPage() {
 
             {canManagePerformances ? (
               <div className="performance-admin-links">
-                <Link to={`/performances/${performance.id}/edit`} className="performance-secondary-link">
-                  Wijzigen
-                </Link>
                 <Link
                   to={`/performances/${performance.id}/planner-overview`}
-                  className="performance-secondary-link"
+                  className="home-create-button performance-link-button"
                 >
                   Planner-overzicht
                 </Link>
-                {!isConfirmingDelete ? (
-                  <Button
-                    type="button"
-                    variant="danger"
-                    onClick={() => setIsConfirmingDelete(true)}
-                    fullWidth
-                  >
-                    Optreden verwijderen
-                  </Button>
-                ) : (
-                  <div className="stack-sm">
-                    <p className="muted-text">Weet je zeker dat je dit optreden definitief wilt verwijderen?</p>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => void handleDelete()}
-                      disabled={isDeleting}
-                      fullWidth
-                    >
-                      {isDeleting ? 'Optreden wordt verwijderd…' : 'Ja, definitief verwijderen'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setIsConfirmingDelete(false)}
-                      disabled={isDeleting}
-                      fullWidth
-                    >
-                      Annuleren
-                    </Button>
-                  </div>
-                )}
+                <Link to={`/performances/${performance.id}/edit`} className="performance-secondary-link">
+                  Wijzigen
+                </Link>
               </div>
             ) : null}
-
-            {deleteError ? <Alert tone="error">{deleteError}</Alert> : null}
           </div>
         </div>
       </PageCard>

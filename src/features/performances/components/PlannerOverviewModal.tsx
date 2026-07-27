@@ -7,7 +7,6 @@ import { getPerformanceResponseOverview, type Performance } from '../api/perform
 import { InstrumentCard } from './InstrumentCard'
 import { ResponseAccordion } from './ResponseAccordion'
 import { StatCard } from './StatCard'
-import { StickyFooter } from './StickyFooter'
 
 type PlannerOverviewModalProps = {
   performanceId: string
@@ -16,6 +15,8 @@ type PlannerOverviewModalProps = {
   isOpen: boolean
   onClose: () => void
 }
+
+type AccordionKey = 'yes' | 'maybe' | 'no' | 'none'
 
 export function PlannerOverviewModal({
   performanceId,
@@ -26,9 +27,25 @@ export function PlannerOverviewModal({
 }: PlannerOverviewModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const accordionSectionRefs = useRef<Record<AccordionKey, HTMLElement | null>>({
+    yes: null,
+    maybe: null,
+    no: null,
+    none: null,
+  })
+  const accordionTriggerRefs = useRef<Record<AccordionKey, HTMLButtonElement | null>>({
+    yes: null,
+    maybe: null,
+    no: null,
+    none: null,
+  })
   const touchStartY = useRef<number | null>(null)
   const touchStartX = useRef<number | null>(null)
   const [dragOffset, setDragOffset] = useState(0)
+  const [openAccordion, setOpenAccordion] = useState<AccordionKey>('none')
+  const [copyReminderLabel, setCopyReminderLabel] = useState('Kopieer herinnering')
+  const [copyReminderError, setCopyReminderError] = useState<string | null>(null)
+  const copyReminderTimeoutRef = useRef<number | null>(null)
 
   const overviewQuery = useQuery({
     queryKey: ['performance-overview', performanceId],
@@ -57,6 +74,9 @@ export function PlannerOverviewModal({
       return
     }
 
+    setOpenAccordion('none')
+    setCopyReminderLabel('Kopieer herinnering')
+    setCopyReminderError(null)
     closeButtonRef.current?.focus()
 
     const previousBodyOverflow = document.body.style.overflow
@@ -110,6 +130,14 @@ export function PlannerOverviewModal({
     }
   }, [isOpen, onClose])
 
+  useEffect(() => {
+    return () => {
+      if (copyReminderTimeoutRef.current) {
+        window.clearTimeout(copyReminderTimeoutRef.current)
+      }
+    }
+  }, [])
+
   if (!isOpen) {
     return null
   }
@@ -119,7 +147,22 @@ export function PlannerOverviewModal({
       return
     }
 
-    await navigator.clipboard.writeText(reminderText)
+    setCopyReminderError(null)
+
+    try {
+      await navigator.clipboard.writeText(reminderText)
+      setCopyReminderLabel('Herinnering gekopieerd')
+
+      if (copyReminderTimeoutRef.current) {
+        window.clearTimeout(copyReminderTimeoutRef.current)
+      }
+
+      copyReminderTimeoutRef.current = window.setTimeout(() => {
+        setCopyReminderLabel('Kopieer herinnering')
+      }, 2000)
+    } catch {
+      setCopyReminderError('Kopiëren van herinnering mislukt.')
+    }
   }
 
   function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
@@ -151,6 +194,22 @@ export function PlannerOverviewModal({
     touchStartY.current = null
     touchStartX.current = null
     setDragOffset(0)
+  }
+
+  function handleAccordionToggle(key: AccordionKey) {
+    setOpenAccordion((current) => (current === key ? 'none' : key))
+  }
+
+  function handleStatCardClick(key: AccordionKey) {
+    setOpenAccordion(key)
+
+    requestAnimationFrame(() => {
+      const section = accordionSectionRefs.current[key]
+      const trigger = accordionTriggerRefs.current[key]
+
+      section?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      window.setTimeout(() => trigger?.focus(), 180)
+    })
   }
 
   const overview = overviewQuery.data
@@ -212,10 +271,22 @@ export function PlannerOverviewModal({
             <>
               <section className="planner-modal__section">
                 <div className="planner-stats-grid">
-                  <StatCard icon="✅" label="Ja" value={overview.counts.yes} tone="yes" />
-                  <StatCard icon="❓" label="Misschien" value={overview.counts.maybe} tone="maybe" />
-                  <StatCard icon="❌" label="Nee" value={overview.counts.no} tone="no" />
-                  <StatCard icon="🕒" label="Nog niet" value={overview.counts.no_response} tone="none" />
+                  <StatCard icon="✅" label="Ja" value={overview.counts.yes} tone="yes" onClick={() => handleStatCardClick('yes')} />
+                  <StatCard
+                    icon="❓"
+                    label="Misschien"
+                    value={overview.counts.maybe}
+                    tone="maybe"
+                    onClick={() => handleStatCardClick('maybe')}
+                  />
+                  <StatCard icon="❌" label="Nee" value={overview.counts.no} tone="no" onClick={() => handleStatCardClick('no')} />
+                  <StatCard
+                    icon="🕒"
+                    label="Nog niet"
+                    value={overview.counts.no_response}
+                    tone="none"
+                    onClick={() => handleStatCardClick('none')}
+                  />
                 </div>
               </section>
 
@@ -225,9 +296,6 @@ export function PlannerOverviewModal({
                     <h3>Reacties</h3>
                     <p>Bekijk per antwoordgroep wie al heeft gereageerd.</p>
                   </div>
-                  <Button type="button" variant="ghost" onClick={() => void handleCopyReminder()}>
-                    Kopieer herinnering
-                  </Button>
                 </div>
 
                 <div className="planner-accordion-list">
@@ -239,7 +307,14 @@ export function PlannerOverviewModal({
                     people={overview.yes}
                     emptyText="Nog geen ja-reacties."
                     tone="yes"
-                    defaultOpen
+                    isOpen={openAccordion === 'yes'}
+                    onToggle={() => handleAccordionToggle('yes')}
+                    sectionRef={(element) => {
+                      accordionSectionRefs.current.yes = element
+                    }}
+                    triggerRef={(element) => {
+                      accordionTriggerRefs.current.yes = element
+                    }}
                   />
                   <ResponseAccordion
                     icon="❓"
@@ -250,6 +325,14 @@ export function PlannerOverviewModal({
                     emptyText="Nog geen misschien-reacties."
                     tone="maybe"
                     showReason
+                    isOpen={openAccordion === 'maybe'}
+                    onToggle={() => handleAccordionToggle('maybe')}
+                    sectionRef={(element) => {
+                      accordionSectionRefs.current.maybe = element
+                    }}
+                    triggerRef={(element) => {
+                      accordionTriggerRefs.current.maybe = element
+                    }}
                   />
                   <ResponseAccordion
                     icon="❌"
@@ -260,6 +343,14 @@ export function PlannerOverviewModal({
                     emptyText="Nog geen nee-reacties."
                     tone="no"
                     showReason
+                    isOpen={openAccordion === 'no'}
+                    onToggle={() => handleAccordionToggle('no')}
+                    sectionRef={(element) => {
+                      accordionSectionRefs.current.no = element
+                    }}
+                    triggerRef={(element) => {
+                      accordionTriggerRefs.current.no = element
+                    }}
                   />
                   <ResponseAccordion
                     icon="🕒"
@@ -269,9 +360,23 @@ export function PlannerOverviewModal({
                     people={overview.no_response}
                     emptyText="Iedereen heeft gereageerd."
                     tone="none"
-                    defaultOpen
+                    action={overview.counts.no_response > 0 ? (
+                      <Button type="button" variant="ghost" onClick={() => void handleCopyReminder()}>
+                        {copyReminderLabel}
+                      </Button>
+                    ) : null}
+                    isOpen={openAccordion === 'none'}
+                    onToggle={() => handleAccordionToggle('none')}
+                    sectionRef={(element) => {
+                      accordionSectionRefs.current.none = element
+                    }}
+                    triggerRef={(element) => {
+                      accordionTriggerRefs.current.none = element
+                    }}
                   />
                 </div>
+
+                {copyReminderError ? <Alert tone="error">{copyReminderError}</Alert> : null}
               </section>
 
               <section className="planner-modal__section planner-modal__section--last">
@@ -295,8 +400,6 @@ export function PlannerOverviewModal({
             </>
           ) : null}
         </div>
-
-        <StickyFooter onPrimaryClick={onClose} onSecondaryClick={onClose} />
       </div>
     </div>
   )

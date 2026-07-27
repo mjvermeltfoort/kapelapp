@@ -17,6 +17,7 @@ export function PerformanceEditPage() {
   const queryClient = useQueryClient()
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
@@ -61,12 +62,6 @@ export function PerformanceEditPage() {
   const performance = performanceQuery.data
 
   async function handleDelete() {
-    const confirmed = window.confirm(`Weet je zeker dat je ${performance.title} wilt verwijderen?`)
-
-    if (!confirmed) {
-      return
-    }
-
     setDeleteError(null)
     setIsDeleting(true)
 
@@ -83,6 +78,7 @@ export function PerformanceEditPage() {
   return (
     <PageCard title="Optreden wijzigen" description={`Werk ${performance.title} bij.`}>
       <PerformanceForm
+        mode="edit"
         submitLabel="Wijzigingen opslaan"
         initialValues={{
           title: performance.title,
@@ -109,11 +105,36 @@ export function PerformanceEditPage() {
         }}
       />
 
-      <Button type="button" variant="danger" onClick={() => void handleDelete()} disabled={isDeleting} fullWidth>
-        {isDeleting ? 'Optreden wordt verwijderd…' : 'Optreden verwijderen'}
-      </Button>
+      <section className="performance-form__section">
+        <div className="performance-form__section-header">
+          <h3 className="section-title">Gevarenzone</h3>
+          <p className="muted-text">Verwijder dit optreden definitief. Dit kan niet ongedaan worden gemaakt.</p>
+        </div>
 
-      {deleteError ? <Alert tone="error">{deleteError}</Alert> : null}
+        {!isConfirmingDelete ? (
+          <Button type="button" variant="danger" onClick={() => setIsConfirmingDelete(true)} disabled={isDeleting} fullWidth>
+            Optreden verwijderen
+          </Button>
+        ) : (
+          <div className="stack-sm">
+            <p className="muted-text">Weet je zeker dat je {performance.title} definitief wilt verwijderen?</p>
+            <Button type="button" variant="danger" onClick={() => void handleDelete()} disabled={isDeleting} fullWidth>
+              {isDeleting ? 'Optreden wordt verwijderd…' : 'Ja, definitief verwijderen'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsConfirmingDelete(false)}
+              disabled={isDeleting}
+              fullWidth
+            >
+              Annuleren
+            </Button>
+          </div>
+        )}
+
+        {deleteError ? <Alert tone="error">{deleteError}</Alert> : null}
+      </section>
     </PageCard>
   )
 }

@@ -7,30 +7,41 @@ import type { PerformanceInput, PerformanceStatus } from '../api/performances'
 type PerformanceFormValues = Omit<PerformanceInput, 'bandId'>
 
 type PerformanceFormProps = {
-  submitLabel: string
+  mode: 'create' | 'edit'
+  submitLabel?: string
   initialValues: PerformanceFormValues
   onSubmit: (values: PerformanceFormValues) => Promise<void>
 }
 
 const statuses: PerformanceStatus[] = ['draft', 'published', 'cancelled', 'completed', 'archived']
 
-export function PerformanceForm({ submitLabel, initialValues, onSubmit }: PerformanceFormProps) {
+export function PerformanceForm({ mode, submitLabel, initialValues, onSubmit }: PerformanceFormProps) {
   const [values, setValues] = useState(initialValues)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitAction, setSubmitAction] = useState<'draft' | 'published' | 'default'>('default')
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function submitWithStatus(status: PerformanceStatus, action: 'draft' | 'published' | 'default') {
     setError(null)
     setIsSubmitting(true)
+    setSubmitAction(action)
 
     try {
-      await onSubmit(values)
+      await onSubmit({
+        ...values,
+        status,
+      })
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
     } finally {
       setIsSubmitting(false)
+      setSubmitAction('default')
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    await submitWithStatus(values.status, 'default')
   }
 
   return (
@@ -83,23 +94,25 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
             />
           </FormField>
 
-          <FormField label="Status" hint={`Huidige keuze: ${formatStatusLabel(values.status)}`}>
-            <Select
-              value={values.status}
-              onChange={(event) =>
-                setValues((current) => ({
-                  ...current,
-                  status: event.target.value as PerformanceStatus,
-                }))
-              }
-            >
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {formatStatusLabel(status)}
-                </option>
-              ))}
-            </Select>
-          </FormField>
+          {mode === 'edit' ? (
+            <FormField label="Status" hint={`Huidige keuze: ${formatStatusLabel(values.status)}`}>
+              <Select
+                value={values.status}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    status: event.target.value as PerformanceStatus,
+                  }))
+                }
+              >
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {formatStatusLabel(status)}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+          ) : null}
         </div>
 
         <div className="three-column-grid">
@@ -171,9 +184,20 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
       </section>
 
       <div className="performance-form__footer">
-        <Button type="submit" disabled={isSubmitting} fullWidth>
-          {isSubmitting ? 'Bezig met opslaan…' : submitLabel}
-        </Button>
+        {mode === 'create' ? (
+          <>
+            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void submitWithStatus('draft', 'draft')} fullWidth>
+              {isSubmitting && submitAction === 'draft' ? 'Bezig met opslaan…' : 'Opslaan als concept'}
+            </Button>
+            <Button type="button" disabled={isSubmitting} onClick={() => void submitWithStatus('published', 'published')} fullWidth>
+              {isSubmitting && submitAction === 'published' ? 'Bezig met opslaan…' : 'Publiceren'}
+            </Button>
+          </>
+        ) : (
+          <Button type="submit" disabled={isSubmitting} fullWidth>
+            {isSubmitting ? 'Bezig met opslaan…' : submitLabel}
+          </Button>
+        )}
 
         {error ? <Alert tone="error">{error}</Alert> : null}
       </div>

@@ -18,10 +18,10 @@ export function InstrumentCard({ item }: InstrumentCardProps) {
       </div>
 
       <div className="planner-instrument-card__badges" aria-label={`Verdeling voor ${item.instrument}`}>
-        <span className="planner-count-badge planner-count-badge--yes">✅ {item.yes}</span>
-        <span className="planner-count-badge planner-count-badge--maybe">❓ {item.maybe}</span>
-        <span className="planner-count-badge planner-count-badge--no">❌ {item.no}</span>
-        <span className="planner-count-badge planner-count-badge--none">🕒 {item.no_response}</span>
+        {item.yes > 0 ? <span className="planner-count-badge planner-count-badge--yes">✅ {item.yes}</span> : null}
+        {item.maybe > 0 ? <span className="planner-count-badge planner-count-badge--maybe">❓ {item.maybe}</span> : null}
+        {item.no > 0 ? <span className="planner-count-badge planner-count-badge--no">❌ {item.no}</span> : null}
+        {item.no_response > 0 ? <span className="planner-count-badge planner-count-badge--none">🕒 {item.no_response}</span> : null}
       </div>
     </article>
   )

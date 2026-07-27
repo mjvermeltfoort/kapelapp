@@ -22,7 +22,7 @@ export function ProfileSetupPage() {
 
     try {
       await saveProfile({ displayName })
-      navigate(searchParams.get('next') || '/bands', { replace: true })
+      navigate(searchParams.get('next') || '/', { replace: true })
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
     } finally {

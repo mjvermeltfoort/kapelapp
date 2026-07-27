@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { FormField, Input } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../../../lib/supabase/client'
@@ -13,7 +16,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isOtpLoading, setIsOtpLoading] = useState(false)
-  const redirectTo = searchParams.get('redirectTo') || '/bands'
+  const redirectTo = searchParams.get('redirectTo') || '/'
 
   async function handleGoogleLogin() {
     if (!isConfigured) {
@@ -66,7 +69,7 @@ export function LoginPage() {
       return
     }
 
-    setMessage('OTP-link verzonden. Controleer je e-mail.')
+    setMessage('Inloglink verzonden. Controleer je e-mail.')
     navigate(`/otp?email=${encodeURIComponent(email)}`)
   }
 
@@ -74,44 +77,44 @@ export function LoginPage() {
     <main className="auth-page">
       <PageCard
         title="Inloggen"
-        description="Gebruik Google of een eenmalige code per e-mail."
+        description="Gebruik Google of een inloglink per e-mail."
       >
         {!isConfigured ? (
-          <p role="alert" className="alert alert--error">
+          <Alert tone="error">
             Supabase-config ontbreekt. Zet `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY`.
-          </p>
+          </Alert>
         ) : null}
 
         <p className="muted-text">
-          Gebruik bij voorkeur steeds hetzelfde e-mailadres voor Google en OTP.
+          Gebruik bij voorkeur steeds hetzelfde e-mailadres voor Google en een inloglink.
         </p>
 
-        <button
+        <Button
           type="button"
           onClick={() => void handleGoogleLogin()}
           disabled={isGoogleLoading || isOtpLoading}
+          fullWidth
         >
           {isGoogleLoading ? 'Doorsturen naar Google…' : 'Inloggen met Google'}
-        </button>
+        </Button>
 
-        <form onSubmit={(event) => void handleOtpRequest(event)}>
-          <label>
-            E-mailadres
-            <input
+        <form onSubmit={(event) => void handleOtpRequest(event)} className="performance-form">
+          <FormField label="E-mailadres">
+            <Input
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
               placeholder="jij@voorbeeld.nl"
             />
-          </label>
-          <button type="submit" disabled={isGoogleLoading || isOtpLoading}>
-            {isOtpLoading ? 'Code wordt verstuurd…' : 'Stuur eenmalige code'}
-          </button>
+          </FormField>
+          <Button type="submit" disabled={isGoogleLoading || isOtpLoading} fullWidth>
+            {isOtpLoading ? 'Inloglink wordt verstuurd…' : 'Stuur inloglink'}
+          </Button>
         </form>
 
-        {message ? <p className="alert alert--success">{message}</p> : null}
-        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
+        {message ? <Alert tone="success">{message}</Alert> : null}
+        {error ? <Alert tone="error">{error}</Alert> : null}
       </PageCard>
     </main>
   )

@@ -135,21 +135,6 @@ export function ProfilePage() {
         {message ? <Alert tone="success">{message}</Alert> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
 
-        <div className="profile-info-grid">
-          <div className="performance-meta-card">
-            <span className="performance-meta-card__label">E-mailadres</span>
-            <strong>{profileEmail}</strong>
-          </div>
-          <div className="performance-meta-card">
-            <span className="performance-meta-card__label">Weergavenaam</span>
-            <strong>{profileName}</strong>
-          </div>
-          <div className="performance-meta-card performance-meta-card--wide">
-            <span className="performance-meta-card__label">Gebruikers-ID</span>
-            <strong className="profile-user-id">{user?.id ?? 'Onbekend'}</strong>
-          </div>
-        </div>
-
         <Button type="button" variant="ghost" onClick={() => void signOut()} fullWidth>
           Uitloggen
         </Button>
@@ -186,20 +171,6 @@ export function ProfilePage() {
               </Button>
             </form>
 
-            <div className="profile-info-grid">
-              <div className="performance-meta-card">
-                <span className="performance-meta-card__label">Kapel</span>
-                <strong>{activeMembership.band.name}</strong>
-              </div>
-              <div className="performance-meta-card">
-                <span className="performance-meta-card__label">Rol</span>
-                <strong>{formatRoleLabel(activeMembership.role)}</strong>
-              </div>
-              <div className="performance-meta-card performance-meta-card--wide">
-                <span className="performance-meta-card__label">Instrument</span>
-                <strong>{activeMembership.instrument ?? 'Nog niet ingevuld'}</strong>
-              </div>
-            </div>
 
             {isConfirmingLeave ? (
               <div className="stack-sm">

@@ -9,7 +9,7 @@ export function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const redirectTo = searchParams.get('redirectTo') || '/bands'
+    const redirectTo = searchParams.get('redirectTo') || '/'
 
     void supabase.auth.getSession().then(({ error: sessionError }) => {
       if (sessionError) {

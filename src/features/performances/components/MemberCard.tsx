@@ -7,38 +7,47 @@ type MemberCardProps = {
 }
 
 export function MemberCard({ person, showReason = false }: MemberCardProps) {
-  const hasDetails = Boolean(showReason || person.responded_at)
+  const hasReason = Boolean(showReason && person.reason?.trim())
   const [isOpen, setIsOpen] = useState(false)
   const initials = getInitials(person.display_name)
+  const content = (
+    <>
+      <div className="planner-member__avatar" aria-hidden="true">
+        {initials}
+      </div>
 
-  return (
-    <div className={isOpen ? 'planner-member planner-member--open' : 'planner-member'}>
-      <button
-        type="button"
-        className="planner-member__trigger"
-        onClick={() => setIsOpen((current) => !current)}
-        aria-expanded={hasDetails ? isOpen : undefined}
-        disabled={!hasDetails}
-      >
-        <div className="planner-member__avatar" aria-hidden="true">
-          {initials}
-        </div>
+      <div className="planner-member__body">
+        <strong>{person.display_name}</strong>
+        <span>{person.instrument ?? 'Onbekend'}</span>
+        <span>{formatRespondedAt(person.responded_at)}</span>
+      </div>
 
-        <div className="planner-member__body">
-          <strong>{person.display_name}</strong>
-          <span>{person.instrument ?? 'Onbekend'}</span>
-          <span>{formatRespondedAt(person.responded_at)}</span>
-        </div>
-
+      {hasReason ? (
         <span className="planner-member__chevron" aria-hidden="true">
           ›
         </span>
-      </button>
+      ) : null}
+    </>
+  )
 
-      {hasDetails && isOpen ? (
+  return (
+    <div className={isOpen ? 'planner-member planner-member--open' : 'planner-member'}>
+      {hasReason ? (
+        <button
+          type="button"
+          className="planner-member__trigger"
+          onClick={() => setIsOpen((current) => !current)}
+          aria-expanded={isOpen}
+        >
+          {content}
+        </button>
+      ) : (
+        <div className="planner-member__static">{content}</div>
+      )}
+
+      {hasReason && isOpen ? (
         <div className="planner-member__details">
-          {showReason ? <p>Reden: {person.reason ?? 'Geen reden opgegeven'}</p> : null}
-          {person.responded_at ? <p>Gereageerd: {formatRespondedAtLong(person.responded_at)}</p> : null}
+          <p>Reden: {person.reason}</p>
         </div>
       ) : null}
     </div>
@@ -67,13 +76,3 @@ function formatRespondedAt(value?: string) {
   })
 }
 
-function formatRespondedAtLong(value: string) {
-  return new Date(value).toLocaleString('nl-NL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}

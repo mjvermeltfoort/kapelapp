@@ -202,10 +202,12 @@ export function MembersPage() {
               </div>
 
               <div className="member-card__details-grid">
-                <div className="member-card__detail-item">
-                  <span className="member-card__label">Kapel</span>
-                  <p>{member.band_name}</p>
-                </div>
+                {isSuperadmin ? (
+                  <div className="member-card__detail-item">
+                    <span className="member-card__label">Kapel</span>
+                    <p>{member.band_name}</p>
+                  </div>
+                ) : null}
                 <div className="member-card__detail-item">
                   <span className="member-card__label">Instrument</span>
                   <p>{member.instrument ?? 'Niet ingevuld'}</p>
@@ -214,10 +216,12 @@ export function MembersPage() {
                   <span className="member-card__label">Lid sinds</span>
                   <p>{new Date(member.joined_at).toLocaleDateString()}</p>
                 </div>
-                <div className="member-card__detail-item">
-                  <span className="member-card__label">Vertrokken</span>
-                  <p>{member.left_at ? new Date(member.left_at).toLocaleDateString() : '—'}</p>
-                </div>
+                {member.left_at ? (
+                  <div className="member-card__detail-item">
+                    <span className="member-card__label">Vertrokken</span>
+                    <p>{new Date(member.left_at).toLocaleDateString()}</p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="member-card__actions member-card__actions--enhanced">
@@ -238,7 +242,7 @@ export function MembersPage() {
                 </FormField>
 
                 {canRemoveMember ? (
-                  <div className="member-card__button-stack">
+                  <div className="member-card__button-stack" role="group" aria-label={`Acties voor ${member.display_name ?? member.email}`}>
                     {confirmKey === `deactivate:${member.user_id}` ? (
                       <div className="stack-sm">
                         <p className="muted-text">Weet je zeker dat je dit lid wilt deactiveren?</p>
@@ -287,11 +291,7 @@ export function MembersPage() {
                       </Button>
                     )}
                   </div>
-                ) : (
-                  <Button type="button" variant="secondary" disabled fullWidth>
-                    Niet verwijderbaar
-                  </Button>
-                )}
+                ) : null}
               </div>
             </div>
           )

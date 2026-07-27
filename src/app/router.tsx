@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { HomeRedirect } from './HomeRedirect'
 import { AppLayout } from './layouts/AppLayout'
 import {
   AdminPage,
@@ -43,7 +44,7 @@ export const router = createBrowserRouter([
       </RequireAuth>
     ),
     children: [
-      { index: true, element: <Navigate to="/bands" replace /> },
+      { index: true, element: <HomeRedirect /> },
       { path: 'profile/setup', element: <RouterElement><ProfileSetupPage /></RouterElement> },
       { path: 'profile', element: <RouterElement><ProfilePage /></RouterElement> },
       { path: 'bands', element: <RouterElement><BandSwitcherPage /></RouterElement> },
