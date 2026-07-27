@@ -1,45 +1,40 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from './layouts/AppLayout'
+import {
+  AdminPage,
+  AuthCallbackPage,
+  BandSwitcherPage,
+  JoinInvitePage,
+  LoginPage,
+  OtpPage,
+  PerformanceCreatePage,
+  PerformanceDetailPage,
+  PerformanceEditPage,
+  PerformancesPage,
+  PlannerOverviewPage,
+  ProfilePage,
+  ProfileSetupPage,
+  RouterElement,
+} from './routerElements'
 import { RequireAuth } from './router/RequireAuth'
 import { RequireGuest } from './router/RequireGuest'
-import { LoginPage } from '../features/auth/pages/LoginPage'
-import { OtpPage } from '../features/auth/pages/OtpPage'
-import { AuthCallbackPage } from '../features/auth/pages/AuthCallbackPage'
-import { JoinInvitePage } from '../features/invites/pages/JoinInvitePage'
-import { ProfileSetupPage } from '../features/profile/pages/ProfileSetupPage'
-import { ProfilePage } from '../features/profile/pages/ProfilePage'
-import { BandSwitcherPage } from '../features/bands/pages/BandSwitcherPage'
-import { PerformancesPage } from '../features/performances/pages/PerformancesPage'
-import { PerformanceDetailPage } from '../features/performances/pages/PerformanceDetailPage'
-import { PlannerOverviewPage } from '../features/performances/pages/PlannerOverviewPage'
-import { PerformanceCreatePage } from '../features/performances/pages/PerformanceCreatePage'
-import { PerformanceEditPage } from '../features/performances/pages/PerformanceEditPage'
-import { AdminPage } from '../features/admin/pages/AdminPage'
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: (
-      <RequireGuest>
-        <LoginPage />
-      </RequireGuest>
-    ),
+    element: <RequireGuest><RouterElement auth><LoginPage /></RouterElement></RequireGuest>,
   },
   {
     path: '/otp',
-    element: (
-      <RequireGuest>
-        <OtpPage />
-      </RequireGuest>
-    ),
+    element: <RequireGuest><RouterElement auth><OtpPage /></RouterElement></RequireGuest>,
   },
   {
     path: '/auth/callback',
-    element: <AuthCallbackPage />,
+    element: <RouterElement auth><AuthCallbackPage /></RouterElement>,
   },
   {
     path: '/join/:token',
-    element: <JoinInvitePage />,
+    element: <RouterElement auth><JoinInvitePage /></RouterElement>,
   },
   {
     path: '/',
@@ -50,18 +45,18 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="/bands" replace /> },
-      { path: 'profile/setup', element: <ProfileSetupPage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'bands', element: <BandSwitcherPage /> },
-      { path: 'performances', element: <PerformancesPage /> },
-      { path: 'performances/new', element: <PerformanceCreatePage /> },
-      { path: 'performances/:performanceId', element: <PerformanceDetailPage /> },
-      { path: 'performances/:performanceId/edit', element: <PerformanceEditPage /> },
+      { path: 'profile/setup', element: <RouterElement><ProfileSetupPage /></RouterElement> },
+      { path: 'profile', element: <RouterElement><ProfilePage /></RouterElement> },
+      { path: 'bands', element: <RouterElement><BandSwitcherPage /></RouterElement> },
+      { path: 'performances', element: <RouterElement><PerformancesPage /></RouterElement> },
+      { path: 'performances/new', element: <RouterElement><PerformanceCreatePage /></RouterElement> },
+      { path: 'performances/:performanceId', element: <RouterElement><PerformanceDetailPage /></RouterElement> },
+      { path: 'performances/:performanceId/edit', element: <RouterElement><PerformanceEditPage /></RouterElement> },
       {
         path: 'performances/:performanceId/planner-overview',
-        element: <PlannerOverviewPage />,
+        element: <RouterElement><PlannerOverviewPage /></RouterElement>,
       },
-      { path: 'admin', element: <AdminPage /> },
+      { path: 'admin', element: <RouterElement><AdminPage /></RouterElement> },
       { path: 'settings/band', element: <Navigate to="/admin?tab=band" replace /> },
       { path: 'settings/members', element: <Navigate to="/admin?tab=members" replace /> },
       { path: 'settings/invites', element: <Navigate to="/admin?tab=invites" replace /> },
