@@ -1055,6 +1055,10 @@ input[type='radio'] {
   line-height: 1.4;
 }
 
+.performance-description-card p {
+  white-space: pre-line;
+}
+
 .performance-actions {
   display: grid;
   gap: var(--space-3);
