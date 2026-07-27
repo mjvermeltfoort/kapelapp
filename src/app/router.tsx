@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
       { path: 'admin', element: <RouterElement><AdminPage /></RouterElement> },
       { path: 'settings/band', element: <Navigate to="/admin?tab=band" replace /> },
       { path: 'settings/members', element: <Navigate to="/admin?tab=members" replace /> },
-      { path: 'settings/invites', element: <Navigate to="/admin?tab=invites" replace /> },
+      { path: 'settings/invites', element: <Navigate to="/admin?tab=band" replace /> },
     ],
   },
   {

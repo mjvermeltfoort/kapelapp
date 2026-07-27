@@ -5,13 +5,11 @@ import { isAdminRole } from '../../../lib/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { BandSettingsPage } from '../../bands/pages/BandSettingsPage'
 import { useBand } from '../../bands/hooks/useBand'
-import { InvitesPage } from '../../invites/pages/InvitesPage'
 import { MembersPage } from '../../members/pages/MembersPage'
 
 const tabs = [
   { key: 'band', label: 'Kapel' },
   { key: 'members', label: 'Leden' },
-  { key: 'invites', label: 'Uitnodigingen' },
 ] as const
 
 type TabKey = (typeof tabs)[number]['key']
@@ -55,7 +53,6 @@ export function AdminPage() {
       </Tabs>
 
       {activeTab === 'members' ? <MembersPage /> : null}
-      {activeTab === 'invites' ? <InvitesPage /> : null}
       {activeTab === 'band' ? <BandSettingsPage /> : null}
     </div>
   )
