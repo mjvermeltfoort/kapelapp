@@ -8,6 +8,7 @@ import { EmptyState } from '../../../components/EmptyState'
 import { Icon } from '../../../components/Icon'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
+import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
 import { listMyPerformanceResponses } from '../../responses/api/responses'
@@ -16,7 +17,7 @@ import { listBandPerformances } from '../api/performances'
 export function PerformancesPage() {
   const { profile } = useAuth()
   const { activeMembership } = useBand()
-  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManagePerformances = canManage(activeMembership?.role)
   const [visibleCount, setVisibleCount] = useState(3)
 
   const performancesQuery = useQuery({

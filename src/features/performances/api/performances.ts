@@ -107,15 +107,10 @@ export async function getPerformance(performanceId: string): Promise<Performance
 
 export async function createPerformance(input: PerformanceInput): Promise<Performance> {
   const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (authError) {
-    throw authError
-  }
-
-  if (!user) {
+  if (!session?.user) {
     throw new Error('Geen actieve sessie.')
   }
 
@@ -135,8 +130,8 @@ export async function createPerformance(input: PerformanceInput): Promise<Perfor
       status: input.status,
       cancelled_at: input.status === 'cancelled' ? new Date().toISOString() : null,
       archived_at: input.status === 'archived' ? new Date().toISOString() : null,
-      created_by: user.id,
-      updated_by: user.id,
+      created_by: session.user.id,
+      updated_by: session.user.id,
     })
     .select(PERFORMANCE_SELECT)
     .single()
@@ -153,15 +148,10 @@ export async function updatePerformance(
   input: PerformanceInput,
 ): Promise<Performance> {
   const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (authError) {
-    throw authError
-  }
-
-  if (!user) {
+  if (!session?.user) {
     throw new Error('Geen actieve sessie.')
   }
 
@@ -180,7 +170,7 @@ export async function updatePerformance(
       status: input.status,
       cancelled_at: input.status === 'cancelled' ? new Date().toISOString() : null,
       archived_at: input.status === 'archived' ? new Date().toISOString() : null,
-      updated_by: user.id,
+      updated_by: session.user.id,
     })
     .eq('id', performanceId)
     .select(PERFORMANCE_SELECT)

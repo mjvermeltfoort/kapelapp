@@ -6,6 +6,7 @@ import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
+import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
@@ -17,9 +18,10 @@ export function PerformanceDetailPage() {
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
-  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManagePerformances = canManage(activeMembership?.role)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const queryClient = useQueryClient()
 
   const performanceQuery = useQuery({
@@ -63,14 +65,9 @@ export function PerformanceDetailPage() {
   const performance = performanceQuery.data
 
   async function handleDelete() {
-    const confirmed = window.confirm(`Weet je zeker dat je ${performance.title} wilt verwijderen?`)
-
-    if (!confirmed) {
-      return
-    }
-
     setDeleteError(null)
     setIsDeleting(true)
+    setIsConfirmingDelete(false)
 
     try {
       await deletePerformance(performance.id)
@@ -144,15 +141,38 @@ export function PerformanceDetailPage() {
                 >
                   Planner-overzicht
                 </Link>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => void handleDelete()}
-                  disabled={isDeleting}
-                  fullWidth
-                >
-                  {isDeleting ? 'Optreden wordt verwijderd…' : 'Optreden verwijderen'}
-                </Button>
+                {!isConfirmingDelete ? (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => setIsConfirmingDelete(true)}
+                    fullWidth
+                  >
+                    Optreden verwijderen
+                  </Button>
+                ) : (
+                  <div className="stack-sm">
+                    <p className="muted-text">Weet je zeker dat je dit optreden definitief wilt verwijderen?</p>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => void handleDelete()}
+                      disabled={isDeleting}
+                      fullWidth
+                    >
+                      {isDeleting ? 'Optreden wordt verwijderd…' : 'Ja, definitief verwijderen'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setIsConfirmingDelete(false)}
+                      disabled={isDeleting}
+                      fullWidth
+                    >
+                      Annuleren
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : null}
 

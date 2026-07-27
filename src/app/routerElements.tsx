@@ -21,9 +21,6 @@ export const PerformancesPage = lazy(
 export const PerformanceDetailPage = lazy(
   async () => import('../features/performances/pages/PerformanceDetailPage').then((module) => ({ default: module.PerformanceDetailPage })),
 )
-export const PlannerOverviewPage = lazy(
-  async () => import('../features/performances/pages/PlannerOverviewPage').then((module) => ({ default: module.PlannerOverviewPage })),
-)
 export const PerformanceCreatePage = lazy(
   async () => import('../features/performances/pages/PerformanceCreatePage').then((module) => ({ default: module.PerformanceCreatePage })),
 )

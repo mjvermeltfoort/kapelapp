@@ -1,6 +1,7 @@
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
 import { TabLink, Tabs } from '../../../components/Tabs'
+import { isAdminRole } from '../../../lib/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { BandSettingsPage } from '../../bands/pages/BandSettingsPage'
 import { useBand } from '../../bands/hooks/useBand'
@@ -24,7 +25,7 @@ export function AdminPage() {
     ? (requestedTab as TabKey)
     : 'band'
 
-  const canManageAdmin = profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManageAdmin = profile?.is_superadmin || isAdminRole(activeMembership?.role)
 
   if (!canManageAdmin) {
     return <Navigate to="/performances" replace />

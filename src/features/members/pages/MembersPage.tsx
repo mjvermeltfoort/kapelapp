@@ -28,6 +28,7 @@ export function MembersPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
+  const [confirmKey, setConfirmKey] = useState<string | null>(null)
 
   const isSuperadmin = profile?.is_superadmin ?? false
   const canManageMembers = useMemo(
@@ -62,10 +63,12 @@ export function MembersPage() {
   }
 
   async function handleDeactivate(member: BandMemberRecord) {
-    if (!window.confirm(`Weet je zeker dat je ${member.display_name ?? member.email} wilt deactiveren?`)) {
+    const key = `deactivate:${member.user_id}`
+    if (confirmKey !== key) {
+      setConfirmKey(key)
       return
     }
-
+    setConfirmKey(null)
     setMessage(null)
     setError(null)
     setPendingKey(`deactivate:${member.user_id}`)
@@ -85,14 +88,12 @@ export function MembersPage() {
   }
 
   async function handleDelete(member: BandMemberRecord) {
-    if (
-      !window.confirm(
-        `Weet je zeker dat je ${member.display_name ?? member.email} definitief uit deze kapel wilt verwijderen?`,
-      )
-    ) {
+    const key = `delete:${member.user_id}`
+    if (confirmKey !== key) {
+      setConfirmKey(key)
       return
     }
-
+    setConfirmKey(null)
     setMessage(null)
     setError(null)
     setPendingKey(`delete:${member.user_id}`)
@@ -238,7 +239,17 @@ export function MembersPage() {
 
                 {canRemoveMember ? (
                   <div className="member-card__button-stack">
-                    {member.is_active ? (
+                    {confirmKey === `deactivate:${member.user_id}` ? (
+                      <div className="stack-sm">
+                        <p className="muted-text">Weet je zeker dat je dit lid wilt deactiveren?</p>
+                        <Button type="button" variant="secondary" disabled={isPending} onClick={() => void handleDeactivate(member)} fullWidth>
+                          Ja, deactiveren
+                        </Button>
+                        <Button type="button" variant="ghost" disabled={isPending} onClick={() => setConfirmKey(null)} fullWidth>
+                          Annuleren
+                        </Button>
+                      </div>
+                    ) : member.is_active ? (
                       <Button
                         type="button"
                         variant="secondary"
@@ -254,15 +265,27 @@ export function MembersPage() {
                       </Button>
                     )}
 
-                    <Button
-                      type="button"
-                      variant="danger"
-                      disabled={isPending}
-                      onClick={() => void handleDelete(member)}
-                      fullWidth
-                    >
-                      Definitief verwijderen
-                    </Button>
+                    {confirmKey === `delete:${member.user_id}` ? (
+                      <div className="stack-sm">
+                        <p className="muted-text">Weet je zeker dat je dit lid definitief wilt verwijderen?</p>
+                        <Button type="button" variant="danger" disabled={isPending} onClick={() => void handleDelete(member)} fullWidth>
+                          Ja, definitief verwijderen
+                        </Button>
+                        <Button type="button" variant="ghost" disabled={isPending} onClick={() => setConfirmKey(null)} fullWidth>
+                          Annuleren
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="danger"
+                        disabled={isPending}
+                        onClick={() => void handleDelete(member)}
+                        fullWidth
+                      >
+                        Definitief verwijderen
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <Button type="button" variant="secondary" disabled fullWidth>

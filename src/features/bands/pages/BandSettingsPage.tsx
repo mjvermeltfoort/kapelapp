@@ -4,6 +4,7 @@ import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { FormField, Input, Textarea } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
+import { isAdminRole } from '../../../lib/roles'
 import { useBand } from '../hooks/useBand'
 import { updateBand } from '../api/bands'
 
@@ -25,7 +26,7 @@ export function BandSettingsPage() {
   async function handleSettingsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!activeMembership || !['admin', 'owner'].includes(activeMembership.role)) {
+    if (!activeMembership || !isAdminRole(activeMembership.role)) {
       return
     }
 
@@ -57,7 +58,7 @@ export function BandSettingsPage() {
     )
   }
 
-  const canManageBand = ['admin', 'owner'].includes(activeMembership.role)
+  const canManageBand = isAdminRole(activeMembership.role)
 
   return (
     <PageCard title="Kapelinstellingen" description="Pas naam, uitleg en zichtbaarheid van reacties aan.">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { clearInstallPrompt, getInstallPrompt } from '../../lib/installPrompt'
+import { canManagePerformances as canManage } from '../../lib/roles'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
@@ -48,8 +49,7 @@ export function AppLayout() {
     return items
   }, [activeMembership, profile?.is_superadmin])
 
-  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
-  const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances
+  const showCreatePerformanceAction = location.pathname === '/performances' && canManage(activeMembership?.role)
 
   useEffect(() => {
     const standalone = isStandaloneMode()

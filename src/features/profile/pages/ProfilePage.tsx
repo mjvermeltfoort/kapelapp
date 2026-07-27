@@ -20,6 +20,7 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isSavingMembership, setIsSavingMembership] = useState(false)
   const [isLeavingBand, setIsLeavingBand] = useState(false)
+  const [isConfirmingLeave, setIsConfirmingLeave] = useState(false)
 
   useEffect(() => {
     setDisplayName(profile?.display_name ?? '')
@@ -75,14 +76,12 @@ export function ProfilePage() {
       return
     }
 
-    const confirmed = window.confirm(
-      `Weet je zeker dat je ${activeMembership.band.name} wilt verlaten?`,
-    )
-
-    if (!confirmed) {
+    if (!isConfirmingLeave) {
+      setIsConfirmingLeave(true)
       return
     }
 
+    setIsConfirmingLeave(false)
     setMembershipError(null)
     setMembershipMessage(null)
     setIsLeavingBand(true)
@@ -202,15 +201,39 @@ export function ProfilePage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => void handleLeaveBand()}
-              disabled={isLeavingBand}
-              fullWidth
-            >
-              {isLeavingBand ? 'Kapel wordt verlaten…' : 'Kapel verlaten'}
-            </Button>
+            {isConfirmingLeave ? (
+              <div className="stack-sm">
+                <p className="muted-text">Weet je zeker dat je {activeMembership.band.name} wilt verlaten?</p>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => void handleLeaveBand()}
+                  disabled={isLeavingBand}
+                  fullWidth
+                >
+                  {isLeavingBand ? 'Kapel wordt verlaten…' : 'Ja, kapel verlaten'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsConfirmingLeave(false)}
+                  disabled={isLeavingBand}
+                  fullWidth
+                >
+                  Annuleren
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => void handleLeaveBand()}
+                disabled={isLeavingBand}
+                fullWidth
+              >
+                Kapel verlaten
+              </Button>
+            )}
 
             {membershipMessage ? <Alert tone="success">{membershipMessage}</Alert> : null}
             {membershipError ? <Alert tone="error">{membershipError}</Alert> : null}

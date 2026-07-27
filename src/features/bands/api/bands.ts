@@ -32,7 +32,7 @@ function mapMembership(row: {
   is_active: boolean
   joined_at: string
   left_at: string | null
-  band: Band | Band[]
+  band: Band
 }): BandMembership {
   return {
     id: row.id,
@@ -43,7 +43,7 @@ function mapMembership(row: {
     is_active: row.is_active,
     joined_at: row.joined_at,
     left_at: row.left_at,
-    band: Array.isArray(row.band) ? row.band[0] : row.band,
+    band: row.band,
   }
 }
 
@@ -93,7 +93,13 @@ export async function listMyBandMemberships(): Promise<BandMembership[]> {
     throw error
   }
 
-  return (data ?? []).map((row) => mapMembership(row as never))
+  return (data ?? []).map((row) => {
+    const rawBand = row.band as Band | Band[]
+    return mapMembership({
+      ...row,
+      band: Array.isArray(rawBand) ? rawBand[0] : rawBand,
+    })
+  })
 }
 
 export async function createBand(input: {

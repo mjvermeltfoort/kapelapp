@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../../components/Badge'
 import { PageCard } from '../../../components/PageCard'
+import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { createPerformance } from '../api/performances'
 import { PerformanceForm } from '../components/PerformanceForm'
@@ -21,7 +22,7 @@ const initialValues = {
 export function PerformanceCreatePage() {
   const navigate = useNavigate()
   const { activeMembership } = useBand()
-  const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManagePerformances = canManage(activeMembership?.role)
 
   if (!activeMembership) {
     return (

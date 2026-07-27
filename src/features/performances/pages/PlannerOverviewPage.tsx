@@ -7,6 +7,7 @@ import { EmptyState } from '../../../components/EmptyState'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { StatCard } from '../../../components/StatCard'
+import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { getPerformanceResponseOverview } from '../api/performances'
 import type { PerformanceOverviewPerson } from '../api/performances'
@@ -14,7 +15,7 @@ import type { PerformanceOverviewPerson } from '../api/performances'
 export function PlannerOverviewPage() {
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
-  const canViewOverview = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canViewOverview = canManage(activeMembership?.role)
 
   const overviewQuery = useQuery({
     queryKey: ['performance-overview', performanceId],
