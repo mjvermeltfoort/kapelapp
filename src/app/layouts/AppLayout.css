@@ -1,19 +1,38 @@
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  padding-bottom: env(safe-area-inset-bottom);
+  background:
+    radial-gradient(circle at top, rgb(91 33 182 / 0.05), transparent 30%),
+    var(--color-background-app);
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+.app-shell__top {
+  width: min(100%, calc(var(--content-max-width) + (var(--space-4) * 2)));
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.app-shell__top--header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: max(var(--space-3), env(safe-area-inset-top));
+  backdrop-filter: blur(16px);
 }
 
 .install-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
-  background: linear-gradient(180deg, #2456d6 0%, #183ea2 100%);
-  color: #ffffff;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: var(--color-text-on-brand);
+  box-shadow: var(--shadow-md);
 }
 
 .install-banner__text {
@@ -21,25 +40,28 @@
 }
 
 .install-banner__button {
-  border-color: rgba(255, 255, 255, 0.24);
-  background: #ffffff;
-  color: #183ea2;
+  border-color: rgb(255 255 255 / 0.24);
+  background: var(--color-neutral-0);
+  color: var(--color-brand-700);
   padding: 0.55rem 0.85rem;
   white-space: nowrap;
 }
 
 .install-banner__button:hover {
-  background: #edf4ff;
+  background: var(--color-brand-50);
 }
 
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #dbe4f0;
-  background: #ffffff;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  border-radius: var(--radius-2xl);
+  background: rgb(255 255 255 / 0.88);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-left {
@@ -53,42 +75,44 @@
 .brand-trigger {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid transparent;
-  border-radius: 14px;
+  gap: var(--space-3);
+  min-height: auto;
+  padding: 0;
+  border: 0;
   background: transparent;
   color: inherit;
+  box-shadow: none;
 }
 
 .brand-trigger:hover,
 .brand-trigger--open {
-  border-color: #dbe4f0;
-  background: #f8fbff;
+  background: transparent;
 }
 
 .brand-logo {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   flex: 0 0 auto;
+  border-radius: 1rem;
 }
 
 .brand-text {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 0;
   text-align: left;
 }
 
 .brand-text h1 {
   margin: 0;
-  font-size: 1.1rem;
+  color: var(--color-brand-500);
+  font-size: var(--font-size-xl);
   line-height: 1.1;
 }
 
 .subtitle {
-  color: #4f627a;
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -96,15 +120,15 @@
 
 .brand-panel {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + var(--space-3));
   left: 0;
-  z-index: 20;
-  min-width: 15rem;
-  padding: 0.5rem;
-  border: 1px solid #dbe4f0;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 16px 40px rgba(22, 34, 51, 0.12);
+  z-index: 40;
+  min-width: min(18rem, calc(100vw - (var(--space-4) * 2)));
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-background-surface);
+  box-shadow: var(--shadow-md);
 }
 
 .brand-panel__section,
@@ -114,40 +138,42 @@
 }
 
 .brand-panel__footer {
-  margin-top: 0.4rem;
-  padding-top: 0.45rem;
-  border-top: 1px solid #edf2f7;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .brand-panel__item,
 .brand-panel__link {
   display: grid;
   gap: 0.15rem;
-  padding: 0.6rem 0.75rem;
+  min-height: var(--touch-target-min);
+  padding: 0.7rem 0.85rem;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: transparent;
-  color: #183153;
+  color: var(--color-text-primary);
   text-align: left;
   text-decoration: none;
+  box-shadow: none;
 }
 
 .brand-panel__item:hover,
 .brand-panel__link:hover,
 .brand-panel__item--active {
-  border-color: #dbe4f0;
-  background: #f8fbff;
+  border-color: var(--color-border-subtle);
+  background: var(--color-brand-50);
 }
 
 .brand-panel__item span {
-  color: #4f627a;
-  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .user-block {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -155,71 +181,117 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid #c7d5ea;
-  border-radius: 999px;
-  background: #fff;
-  color: #183153;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-pill);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
   text-decoration: none;
+  box-shadow: var(--shadow-xs);
 }
 
 .nav-icon-link:hover {
-  background: #eef4ff;
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-100);
 }
 
-.app-nav {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
-  overflow-x: auto;
-  border-bottom: 1px solid #dbe4f0;
-  background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
+.nav-icon-link--primary {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-500);
+  color: var(--color-text-on-brand);
 }
 
-.nav-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  color: #29405b;
-  text-decoration: none;
-  background: transparent;
-  white-space: nowrap;
-  transition:
-    background 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease;
-}
-
-.nav-link:hover {
-  border-color: #d6e3ff;
-  background: #ffffff;
-}
-
-.nav-link.active {
-  border-color: #cddcff;
-  background: #dfe9ff;
-  color: #183153;
+.nav-icon-link--primary:hover {
+  border-color: var(--color-brand-600);
+  background: var(--color-brand-600);
+  color: var(--color-text-on-brand);
 }
 
 .nav-icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
 }
 
 .app-main {
-  padding: 1.5rem;
+  width: min(100%, calc(var(--content-max-width) + (var(--space-4) * 2)));
+  margin-inline: auto;
+  padding: var(--space-4);
+}
+
+.app-main__content {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.app-nav-wrap {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  padding: 0 var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.app-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-2);
+  width: min(100%, var(--content-max-width));
+  margin-inline: auto;
+  padding: var(--space-2);
+  border: 1px solid rgb(255 255 255 / 0.72);
+  border-radius: calc(var(--radius-2xl) + 0.25rem);
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+}
+
+.nav-link {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  min-height: 4rem;
+  padding: 0.65rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  background: transparent;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.nav-link:hover {
+  border-color: var(--color-border-subtle);
+  background: var(--color-brand-50);
+}
+
+.nav-link.active {
+  border-color: var(--color-brand-100);
+  background: var(--color-brand-50);
+  color: var(--color-brand-600);
+}
+
+.nav-link__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
 }
 
 @media (max-width: 640px) {
+  .app-shell__top,
+  .app-main,
+  .app-nav-wrap {
+    padding-inline: var(--space-3);
+  }
+
   .install-banner {
     align-items: stretch;
     flex-direction: column;
-    padding: 0.85rem 1rem;
   }
 
   .install-banner__button {
@@ -228,8 +300,8 @@
   }
 
   .app-header {
-    align-items: stretch;
-    padding: 0.9rem 1rem;
+    align-items: flex-start;
+    padding: var(--space-3) var(--space-4);
   }
 
   .brand-panel {
@@ -239,10 +311,11 @@
   }
 
   .user-block {
-    justify-content: space-between;
+    flex-shrink: 0;
   }
 
-  .app-main {
-    padding: 1rem;
+  .nav-link {
+    min-height: 3.75rem;
+    padding-inline: 0.25rem;
   }
 }
