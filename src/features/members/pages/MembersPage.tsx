@@ -1,5 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../../auth/hooks/useAuth'
 import type { BandMembership } from '../../bands/api/bands'
@@ -114,13 +119,13 @@ export function MembersPage() {
 
   return (
     <PageCard title={isSuperadmin ? 'Alle leden' : 'Leden- en rollenbeheer'}>
-      {membersQuery.isLoading ? <p>Leden worden geladen…</p> : null}
-      {membersQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{membersQuery.error.message}</p> : null}
-      {message ? <p className="alert alert--success">{message}</p> : null}
-      {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
+      {membersQuery.isLoading ? <LoadingState>Leden worden geladen…</LoadingState> : null}
+      {membersQuery.error instanceof Error ? <Alert tone="error">{membersQuery.error.message}</Alert> : null}
+      {message ? <Alert tone="success">{message}</Alert> : null}
+      {error ? <Alert tone="error">{error}</Alert> : null}
 
       {!membersQuery.isLoading && !membersQuery.data?.length ? (
-        <p className="empty-state">Geen leden gevonden.</p>
+        <EmptyState>Geen leden gevonden.</EmptyState>
       ) : null}
 
       <div className="stack-sm">
@@ -141,9 +146,9 @@ export function MembersPage() {
                 <p>Instrument: {member.instrument ?? 'Niet ingevuld'}</p>
                 <p>
                   Status:{' '}
-                  <span className={member.is_active ? 'status-pill status-pill--active' : 'status-pill'}>
+                  <Badge tone={member.is_active ? 'success' : 'neutral'}>
                     {member.is_active ? 'Actief' : 'Inactief'}
-                  </span>
+                  </Badge>
                 </p>
                 <p>
                   Lid sinds: {new Date(member.joined_at).toLocaleDateString()}
@@ -170,18 +175,19 @@ export function MembersPage() {
                 </label>
 
                 {member.is_active ? (
-                  <button
+                  <Button
                     type="button"
-                    className="danger-button"
+                    variant="danger"
                     disabled={isPending}
                     onClick={() => void handleDeactivate(member)}
+                    fullWidth
                   >
                     Deactiveren
-                  </button>
+                  </Button>
                 ) : (
-                  <button type="button" disabled={isPending} onClick={() => void handleReactivate(member)}>
+                  <Button type="button" disabled={isPending} onClick={() => void handleReactivate(member)} fullWidth>
                     Heractiveren
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

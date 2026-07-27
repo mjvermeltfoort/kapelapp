@@ -1,5 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
+import { FormField, Input, Textarea } from '../../../components/FormField'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../hooks/useBand'
 
@@ -35,11 +41,11 @@ export function BandSwitcherPage() {
         title="Kapellenkiezer"
         description="Kies actieve kapel voor volgende schermen. Nieuwe kapel wordt automatisch met owner-rol aangemaakt."
       >
-        {isLoading ? <p>Kapellen worden geladen…</p> : null}
-        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
+        {isLoading ? <LoadingState>Kapellen worden geladen…</LoadingState> : null}
+        {error ? <Alert tone="error">{error}</Alert> : null}
 
         {!isLoading && !memberships.length ? (
-          <p className="empty-state">Je bent nog geen lid van een kapel. Maak eerste kapel aan of gebruik later een uitnodigingslink.</p>
+          <EmptyState>Je bent nog geen lid van een kapel. Maak eerste kapel aan of gebruik later een uitnodigingslink.</EmptyState>
         ) : null}
 
         <div className="stack-sm">
@@ -56,9 +62,9 @@ export function BandSwitcherPage() {
                 <strong>{membership.band.name}</strong>
                 <span>Rol: {membership.role}</span>
                 <span>Instrument: {membership.instrument ?? 'Nog niet ingevuld'}</span>
-                <span className={isActive ? 'selection-badge selection-badge--active' : 'selection-badge'}>
+                <Badge tone={isActive ? 'brand' : 'neutral'}>
                   {isActive ? 'Actieve kapel' : 'Tik om te selecteren'}
-                </span>
+                </Badge>
               </button>
             )
           })}
@@ -79,9 +85,8 @@ export function BandSwitcherPage() {
         <p className="muted-text">Handig als startpunt wanneer je nog geen uitnodigingslink hebt.</p>
 
         <form onSubmit={(event) => void handleSubmit(event)}>
-          <label>
-            Naam
-            <input
+          <FormField label="Naam">
+            <Input
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -90,25 +95,24 @@ export function BandSwitcherPage() {
               maxLength={120}
               placeholder="Bijvoorbeeld: Kapel De Vooruitgang"
             />
-          </label>
+          </FormField>
 
-          <label>
-            Beschrijving
-            <textarea
+          <FormField label="Beschrijving">
+            <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={4}
               placeholder="Optioneel"
             />
-          </label>
+          </FormField>
 
-          <button type="submit" disabled={isCreating}>
+          <Button type="submit" disabled={isCreating} fullWidth>
             {isCreating ? 'Kapel wordt aangemaakt…' : 'Kapel aanmaken'}
-          </button>
+          </Button>
         </form>
 
-        {createMessage ? <p className="alert alert--success">{createMessage}</p> : null}
-        {createError ? <p role="alert" className="alert alert--error">{createError}</p> : null}
+        {createMessage ? <Alert tone="success">{createMessage}</Alert> : null}
+        {createError ? <Alert tone="error">{createError}</Alert> : null}
       </PageCard>
     </div>
   )

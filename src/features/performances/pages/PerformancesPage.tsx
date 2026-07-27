@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
 import { Icon } from '../../../components/Icon'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { listMyPerformanceResponses } from '../../responses/api/responses'
@@ -74,23 +79,19 @@ export function PerformancesPage() {
       }
     >
 
-      {performancesQuery.isLoading ? <p>Optredens worden geladen…</p> : null}
+      {performancesQuery.isLoading ? <LoadingState>Optredens worden geladen…</LoadingState> : null}
       {responsesQuery.isLoading && performancesQuery.data?.length ? (
-        <p className="muted-text">Jouw reacties worden bijgewerkt…</p>
+        <LoadingState>Jouw reacties worden bijgewerkt…</LoadingState>
       ) : null}
       {performancesQuery.error instanceof Error ? (
-        <p role="alert" className="alert alert--error">
-          {performancesQuery.error.message}
-        </p>
+        <Alert tone="error">{performancesQuery.error.message}</Alert>
       ) : null}
       {responsesQuery.error instanceof Error ? (
-        <p role="alert" className="alert alert--error">
-          {responsesQuery.error.message}
-        </p>
+        <Alert tone="error">{responsesQuery.error.message}</Alert>
       ) : null}
 
       {!performancesQuery.isLoading && !performancesQuery.data?.length ? (
-        <p className="empty-state">Nog geen optredens voor deze kapel.</p>
+        <EmptyState>Nog geen optredens voor deze kapel.</EmptyState>
       ) : null}
 
       {performancesQuery.data?.length ? (
@@ -107,31 +108,34 @@ export function PerformancesPage() {
             </div>
 
             <div className="calendar-card__actions">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 className="ghost-button ghost-button--icon"
                 onClick={() => setMonthOffset((current) => current - 1)}
                 aria-label="Vorige maand"
                 title="Vorige maand"
               >
                 ‹
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
                 className="ghost-button ghost-button--today"
                 onClick={() => setMonthOffset(0)}
               >
                 Vandaag
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
                 className="ghost-button ghost-button--icon"
                 onClick={() => setMonthOffset((current) => current + 1)}
                 aria-label="Volgende maand"
                 title="Volgende maand"
               >
                 ›
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -223,9 +227,9 @@ export function PerformancesPage() {
                     {performance.end_time ? ` - ${performance.end_time.slice(0, 5)}` : ''}
                   </span>
                   <span>{performance.location}</span>
-                  <span className={`response-badge response-badge--${response?.response ?? 'none'}`}>
+                  <Badge tone={mapResponseTone(response?.response)}>
                     Jouw reactie: {formatResponseLabel(response?.response)}
-                  </span>
+                  </Badge>
                 </Link>
               )
             })}
@@ -250,9 +254,9 @@ export function PerformancesPage() {
               </span>
               <span>{performance.location}</span>
               <span>Status: {formatStatusLabel(performance.status)}</span>
-              <span className={`response-badge response-badge--${response?.response ?? 'none'}`}>
+              <Badge tone={mapResponseTone(response?.response)}>
                 Jouw reactie: {formatResponseLabel(response?.response)}
-              </span>
+              </Badge>
             </Link>
           )
         })}
@@ -271,6 +275,19 @@ function formatResponseLabel(response?: 'yes' | 'maybe' | 'no') {
       return 'Nee'
     default:
       return 'Nog niet gereageerd'
+  }
+}
+
+function mapResponseTone(response?: 'yes' | 'maybe' | 'no') {
+  switch (response) {
+    case 'yes':
+      return 'success' as const
+    case 'maybe':
+      return 'warning' as const
+    case 'no':
+      return 'danger' as const
+    default:
+      return 'neutral' as const
   }
 }
 

@@ -1,4 +1,7 @@
 import { type FormEvent, useState } from 'react'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { FormField, Input, Select, Textarea } from '../../../components/FormField'
 import type { PerformanceInput, PerformanceStatus } from '../api/performances'
 
 type PerformanceFormValues = Omit<PerformanceInput, 'bandId'>
@@ -32,9 +35,8 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)}>
-      <label>
-        Titel
-        <input
+      <FormField label="Titel">
+        <Input
           type="text"
           value={values.title}
           onChange={(event) => setValues((current) => ({ ...current, title: event.target.value }))}
@@ -42,23 +44,21 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
           minLength={2}
           maxLength={160}
         />
-      </label>
+      </FormField>
 
-      <label>
-        Omschrijving
-        <textarea
+      <FormField label="Omschrijving">
+        <Textarea
           rows={4}
           value={values.description}
           onChange={(event) =>
             setValues((current) => ({ ...current, description: event.target.value }))
           }
         />
-      </label>
+      </FormField>
 
       <div className="two-column-grid">
-        <label>
-          Datum
-          <input
+        <FormField label="Datum">
+          <Input
             type="date"
             value={values.performanceDate}
             onChange={(event) =>
@@ -66,11 +66,10 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
             }
             required
           />
-        </label>
+        </FormField>
 
-        <label>
-          Status
-          <select
+        <FormField label="Status">
+          <Select
             value={values.status}
             onChange={(event) =>
               setValues((current) => ({
@@ -84,45 +83,41 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
                 {status}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </FormField>
       </div>
 
       <div className="three-column-grid">
-        <label>
-          Verzameltijd
-          <input
+        <FormField label="Verzameltijd">
+          <Input
             type="time"
             value={values.gatherTime}
             onChange={(event) =>
               setValues((current) => ({ ...current, gatherTime: event.target.value }))
             }
           />
-        </label>
+        </FormField>
 
-        <label>
-          Begintijd
-          <input
+        <FormField label="Begintijd">
+          <Input
             type="time"
             value={values.startTime}
             onChange={(event) => setValues((current) => ({ ...current, startTime: event.target.value }))}
             required
           />
-        </label>
+        </FormField>
 
-        <label>
-          Eindtijd
-          <input
+        <FormField label="Eindtijd">
+          <Input
             type="time"
             value={values.endTime}
             onChange={(event) => setValues((current) => ({ ...current, endTime: event.target.value }))}
           />
-        </label>
+        </FormField>
       </div>
 
-      <label>
-        Locatie
-        <input
+      <FormField label="Locatie">
+        <Input
           type="text"
           value={values.location}
           onChange={(event) => setValues((current) => ({ ...current, location: event.target.value }))}
@@ -130,34 +125,32 @@ export function PerformanceForm({ submitLabel, initialValues, onSubmit }: Perfor
           minLength={2}
           maxLength={160}
         />
-      </label>
+      </FormField>
 
-      <label>
-        Kaartlink
-        <input
+      <FormField label="Kaartlink">
+        <Input
           type="url"
           value={values.mapUrl}
           onChange={(event) => setValues((current) => ({ ...current, mapUrl: event.target.value }))}
           placeholder="https://..."
         />
-      </label>
+      </FormField>
 
-      <label>
-        Reactiedeadline
-        <input
+      <FormField label="Reactiedeadline">
+        <Input
           type="datetime-local"
           value={values.responseDeadline}
           onChange={(event) =>
             setValues((current) => ({ ...current, responseDeadline: event.target.value }))
           }
         />
-      </label>
+      </FormField>
 
-      <button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} fullWidth>
         {isSubmitting ? 'Bezig met opslaan…' : submitLabel}
-      </button>
+      </Button>
 
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <Alert tone="error">{error}</Alert> : null}
     </form>
   )
 }

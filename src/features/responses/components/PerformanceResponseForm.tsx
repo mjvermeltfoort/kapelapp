@@ -1,4 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { FormField, Textarea } from '../../../components/FormField'
 import type { PerformanceResponse, ResponseValue } from '../api/responses'
 
 type PerformanceResponseFormProps = {
@@ -74,21 +77,20 @@ export function PerformanceResponseForm({
       </fieldset>
 
       {response !== 'yes' ? (
-        <label>
-          Reden {response === 'maybe' ? '(verplicht)' : '(optioneel)'}
-          <textarea
+        <FormField label={`Reden ${response === 'maybe' ? '(verplicht)' : '(optioneel)'}`}>
+          <Textarea
             rows={3}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             required={response === 'maybe'}
             placeholder={response === 'maybe' ? 'Waarom misschien?' : 'Eventuele toelichting'}
           />
-        </label>
+        </FormField>
       ) : null}
 
-      <button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting} fullWidth>
         {isSubmitting ? 'Bezig met opslaan…' : 'Reactie opslaan'}
-      </button>
+      </Button>
 
       {currentResponse ? (
         <p className="muted-text">
@@ -96,8 +98,8 @@ export function PerformanceResponseForm({
         </p>
       ) : null}
 
-      {message ? <p>{message}</p> : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {message ? <Alert tone="success">{message}</Alert> : null}
+      {error ? <Alert tone="error">{error}</Alert> : null}
     </form>
   )
 }

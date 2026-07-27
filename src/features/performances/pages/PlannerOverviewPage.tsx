@@ -1,10 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { useParams } from 'react-router-dom'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
+import { StatCard } from '../../../components/StatCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { getPerformanceResponseOverview } from '../api/performances'
 import type { PerformanceOverviewPerson } from '../api/performances'
-import { useParams } from 'react-router-dom'
 
 export function PlannerOverviewPage() {
   const { performanceId } = useParams()
@@ -62,13 +67,17 @@ export function PlannerOverviewPage() {
   }
 
   if (overviewQuery.isLoading) {
-    return <PageCard title="Planner-overzicht" description="Overzicht wordt geladen."><p>Laden…</p></PageCard>
+    return (
+      <PageCard title="Planner-overzicht" description="Overzicht wordt geladen.">
+        <LoadingState />
+      </PageCard>
+    )
   }
 
   if (overviewQuery.error instanceof Error || !overviewQuery.data) {
     return (
       <PageCard title="Planner-overzicht" description="Overzicht kon niet worden geladen.">
-        <p role="alert">{overviewQuery.error instanceof Error ? overviewQuery.error.message : 'Niet gevonden.'}</p>
+        <Alert tone="error">{overviewQuery.error instanceof Error ? overviewQuery.error.message : 'Niet gevonden.'}</Alert>
       </PageCard>
     )
   }
@@ -90,9 +99,9 @@ export function PlannerOverviewPage() {
           <StatCard label="Nog niet gereageerd" value={overview.counts.no_response} />
         </div>
 
-        <button type="button" onClick={() => void handleCopyReminder()}>
+        <Button type="button" onClick={() => void handleCopyReminder()} fullWidth>
           Herinneringstekst kopiëren
-        </button>
+        </Button>
 
         <p className="muted-text">{reminderText}</p>
       </PageCard>
@@ -135,15 +144,6 @@ export function PlannerOverviewPage() {
   )
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="stat-card">
-      <span className="stat-card__label">{label}</span>
-      <strong className="stat-card__value">{value}</strong>
-    </div>
-  )
-}
-
 function PeopleList({
   people,
   emptyText,
@@ -154,7 +154,7 @@ function PeopleList({
   showReason?: boolean
 }) {
   if (!people.length) {
-    return <p>{emptyText}</p>
+    return <EmptyState>{emptyText}</EmptyState>
   }
 
   return (

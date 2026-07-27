@@ -1,5 +1,10 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
+import { FormField, Input } from '../../../components/FormField'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { createBandInvite, listBandInvites, revokeBandInvite } from '../api/invites'
@@ -91,22 +96,20 @@ export function InvitesPage() {
         title="Nieuwe uitnodigingslink"
         description="Admins en owners kunnen leden met een veilige link laten deelnemen. Nieuwe links geven standaard rol member."
       >
-        {!canManageInvites ? <p className="alert alert--info">Alleen admins en owners kunnen uitnodigingen beheren.</p> : null}
+        {!canManageInvites ? <Alert tone="info">Alleen admins en owners kunnen uitnodigingen beheren.</Alert> : null}
 
         <form onSubmit={(event) => void handleCreateInvite(event)}>
-          <label>
-            Vervaldatum
-            <input
+          <FormField label="Vervaldatum">
+            <Input
               type="datetime-local"
               value={expiresAt}
               onChange={(event) => setExpiresAt(event.target.value)}
               disabled={!canManageInvites}
             />
-          </label>
+          </FormField>
 
-          <label>
-            Maximaal aantal keer te gebruiken
-            <input
+          <FormField label="Maximaal aantal keer te gebruiken">
+            <Input
               type="number"
               min={1}
               step={1}
@@ -115,33 +118,32 @@ export function InvitesPage() {
               disabled={!canManageInvites}
               placeholder="Leeg = onbeperkt"
             />
-          </label>
+          </FormField>
 
-          <button type="submit" disabled={isSubmitting || !canManageInvites}>
+          <Button type="submit" disabled={isSubmitting || !canManageInvites} fullWidth>
             {isSubmitting ? 'Bezig met aanmaken…' : 'Uitnodigingslink maken'}
-          </button>
+          </Button>
         </form>
 
         {latestJoinUrl ? (
-          <label>
-            Laatst aangemaakte link
-            <input type="text" value={latestJoinUrl} readOnly />
-          </label>
+          <FormField label="Laatst aangemaakte link">
+            <Input type="text" value={latestJoinUrl} readOnly />
+          </FormField>
         ) : null}
 
-        {message ? <p className="alert alert--success">{message}</p> : null}
-        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
+        {message ? <Alert tone="success">{message}</Alert> : null}
+        {error ? <Alert tone="error">{error}</Alert> : null}
       </PageCard>
 
       <PageCard
         title="Bestaande uitnodigingen"
         description="Actieve en ingetrokken links voor huidige kapel. Token zelf wordt niet opnieuw getoond."
       >
-        {invitesQuery.isLoading ? <p>Uitnodigingen worden geladen…</p> : null}
-        {invitesQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{invitesQuery.error.message}</p> : null}
+        {invitesQuery.isLoading ? <LoadingState>Uitnodigingen worden geladen…</LoadingState> : null}
+        {invitesQuery.error instanceof Error ? <Alert tone="error">{invitesQuery.error.message}</Alert> : null}
 
         {!invitesQuery.isLoading && !invitesQuery.data?.length ? (
-          <p>Nog geen uitnodigingen aangemaakt.</p>
+          <EmptyState>Nog geen uitnodigingen aangemaakt.</EmptyState>
         ) : null}
 
         <div className="stack-sm">
@@ -157,13 +159,14 @@ export function InvitesPage() {
                 </p>
               </div>
 
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 disabled={!invite.is_active || !canManageInvites}
                 onClick={() => void handleRevokeInvite(invite.id)}
               >
                 Intrekken
-              </button>
+              </Button>
             </div>
           ))}
         </div>

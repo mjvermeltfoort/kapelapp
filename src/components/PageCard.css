@@ -8,15 +8,25 @@
 
 .page-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+.page-card__header-content {
+  display: grid;
+  gap: var(--space-2);
 }
 
 .page-card__header h2 {
   margin: 0;
   font-size: var(--font-size-xl);
   line-height: 1.2;
+}
+
+.page-card__description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .page-card__header-action {

@@ -7,11 +7,14 @@ type PageCardProps = PropsWithChildren<{
   headerAction?: ReactNode
 }>
 
-export function PageCard({ title, description: _description, headerAction, children }: PageCardProps) {
+export function PageCard({ title, description, headerAction, children }: PageCardProps) {
   return (
     <section className="page-card">
       <header className="page-card__header">
-        <h2>{title}</h2>
+        <div className="page-card__header-content">
+          <h2>{title}</h2>
+          {description ? <p className="page-card__description">{description}</p> : null}
+        </div>
         {headerAction ? <div className="page-card__header-action">{headerAction}</div> : null}
       </header>
       <div className="page-card__body">{children}</div>

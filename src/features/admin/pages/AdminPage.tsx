@@ -1,5 +1,6 @@
-import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
+import { TabLink, Tabs } from '../../../components/Tabs'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { BandSettingsPage } from '../../bands/pages/BandSettingsPage'
 import { useBand } from '../../bands/hooks/useBand'
@@ -39,18 +40,18 @@ export function AdminPage() {
 
   return (
     <div className="page-grid">
-      <nav className="tab-nav" aria-label="Beheeronderdelen">
+      <Tabs aria-label="Beheeronderdelen">
         {tabs.map((tab) => (
-          <Link
+          <TabLink
             key={tab.key}
             to={`/admin?tab=${tab.key}`}
             replace={activeTab === tab.key}
-            className={tab.key === activeTab ? 'tab-link tab-link--active' : 'tab-link'}
+            isActive={tab.key === activeTab}
           >
             {tab.label}
-          </Link>
+          </TabLink>
         ))}
-      </nav>
+      </Tabs>
 
       {activeTab === 'members' ? <MembersPage /> : null}
       {activeTab === 'invites' ? <InvitesPage /> : null}

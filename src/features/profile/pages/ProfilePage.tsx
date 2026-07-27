@@ -1,6 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useAuth } from '../../auth/hooks/useAuth'
+import { Alert } from '../../../components/Alert'
+import { Button } from '../../../components/Button'
+import { EmptyState } from '../../../components/EmptyState'
+import { FormField, Input } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
+import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
 
 export function ProfilePage() {
@@ -95,9 +99,8 @@ export function ProfilePage() {
     <div className="page-grid">
       <PageCard title="Profiel">
         <form onSubmit={(event) => void handleSubmit(event)}>
-          <label>
-            Weergavenaam
-            <input
+          <FormField label="Weergavenaam">
+            <Input
               type="text"
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
@@ -105,15 +108,15 @@ export function ProfilePage() {
               minLength={2}
               maxLength={80}
             />
-          </label>
+          </FormField>
 
-          <button type="submit" disabled={isSaving}>
+          <Button type="submit" disabled={isSaving} fullWidth>
             {isSaving ? 'Bezig met opslaan…' : 'Opslaan'}
-          </button>
+          </Button>
         </form>
 
-        {message ? <p className="alert alert--success">{message}</p> : null}
-        {error ? <p role="alert" className="alert alert--error">{error}</p> : null}
+        {message ? <Alert tone="success">{message}</Alert> : null}
+        {error ? <Alert tone="error">{error}</Alert> : null}
 
         <dl>
           <div>
@@ -130,31 +133,30 @@ export function ProfilePage() {
           </div>
         </dl>
 
-        <button type="button" className="ghost-button" onClick={() => void signOut()}>
+        <Button type="button" variant="ghost" onClick={() => void signOut()} fullWidth>
           Uitloggen
-        </button>
+        </Button>
       </PageCard>
 
       <PageCard title="Actieve kapel">
-        {!activeMembership ? <p className="empty-state">Geen actieve kapel geselecteerd.</p> : null}
+        {!activeMembership ? <EmptyState>Geen actieve kapel geselecteerd.</EmptyState> : null}
 
         {activeMembership ? (
           <>
             <form onSubmit={(event) => void handleMembershipSubmit(event)}>
-              <label>
-                Instrument
-                <input
+              <FormField label="Instrument">
+                <Input
                   type="text"
                   value={instrument}
                   onChange={(event) => setInstrument(event.target.value)}
                   maxLength={80}
                   placeholder="Bijvoorbeeld: trompet"
                 />
-              </label>
+              </FormField>
 
-              <button type="submit" disabled={isSavingMembership}>
+              <Button type="submit" disabled={isSavingMembership} fullWidth>
                 {isSavingMembership ? 'Bezig met opslaan…' : 'Instrument opslaan'}
-              </button>
+              </Button>
             </form>
 
             <dl>
@@ -172,17 +174,18 @@ export function ProfilePage() {
               </div>
             </dl>
 
-            <button
+            <Button
               type="button"
-              className="danger-button"
+              variant="danger"
               onClick={() => void handleLeaveBand()}
               disabled={isLeavingBand}
+              fullWidth
             >
               {isLeavingBand ? 'Kapel wordt verlaten…' : 'Kapel verlaten'}
-            </button>
+            </Button>
 
-            {membershipMessage ? <p className="alert alert--success">{membershipMessage}</p> : null}
-            {membershipError ? <p role="alert" className="alert alert--error">{membershipError}</p> : null}
+            {membershipMessage ? <Alert tone="success">{membershipMessage}</Alert> : null}
+            {membershipError ? <Alert tone="error">{membershipError}</Alert> : null}
           </>
         ) : null}
       </PageCard>
