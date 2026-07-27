@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
+import { clearInstallPrompt, getInstallPrompt } from '../../lib/installPrompt'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
@@ -51,13 +52,24 @@ export function AppLayout() {
   const showCreatePerformanceAction = location.pathname === '/performances' && canManagePerformances
 
   useEffect(() => {
-    setIsStandalone(isStandaloneMode())
-    setShowInstallHint(isAndroidChrome() && !isStandaloneMode())
+    const standalone = isStandaloneMode()
+    setIsStandalone(standalone)
 
-    function handleBeforeInstallPrompt(event: Event) {
-      event.preventDefault()
-      setInstallPrompt(event as BeforeInstallPromptEvent)
-      setShowInstallHint(false)
+    if (!standalone) {
+      const captured = getInstallPrompt()
+      if (captured) {
+        setInstallPrompt(captured as BeforeInstallPromptEvent)
+      } else if (isAndroidChrome()) {
+        setShowInstallHint(true)
+      }
+    }
+
+    function handleInstallPromptReady() {
+      const captured = getInstallPrompt()
+      if (captured) {
+        setInstallPrompt(captured as BeforeInstallPromptEvent)
+        setShowInstallHint(false)
+      }
     }
 
     function handleAppInstalled() {
@@ -67,19 +79,19 @@ export function AppLayout() {
     }
 
     function handleDisplayModeChange() {
-      const standalone = isStandaloneMode()
-      setIsStandalone(standalone)
-      if (standalone) {
+      const isNowStandalone = isStandaloneMode()
+      setIsStandalone(isNowStandalone)
+      if (isNowStandalone) {
         setShowInstallHint(false)
       }
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('installpromptready', handleInstallPromptReady)
     window.addEventListener('appinstalled', handleAppInstalled)
     window.matchMedia('(display-mode: standalone)').addEventListener('change', handleDisplayModeChange)
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('installpromptready', handleInstallPromptReady)
       window.removeEventListener('appinstalled', handleAppInstalled)
       window.matchMedia('(display-mode: standalone)').removeEventListener('change', handleDisplayModeChange)
     }
@@ -92,6 +104,7 @@ export function AppLayout() {
 
     await installPrompt.prompt()
     await installPrompt.userChoice
+    clearInstallPrompt()
     setInstallPrompt(null)
   }
 
