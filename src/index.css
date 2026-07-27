@@ -1009,3 +1009,97 @@ input[type='radio'] {
     flex-direction: column;
   }
 }
+
+.performance-hero {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.performance-hero__status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.performance-hero__deadline {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.performance-meta-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.performance-meta-card,
+.performance-description-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-background-surface-muted);
+}
+
+.performance-meta-card__label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.performance-meta-card strong,
+.performance-description-card p {
+  font-size: var(--font-size-lg);
+  line-height: 1.4;
+}
+
+.performance-actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.performance-link-button {
+  width: 100%;
+}
+
+.performance-admin-links {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.performance-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  box-shadow: var(--shadow-xs);
+}
+
+.performance-secondary-link:hover {
+  background: var(--color-brand-50);
+  color: var(--color-text-primary);
+}
+
+@media (min-width: 720px) {
+  .performance-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .performance-meta-card--wide,
+  .performance-description-card {
+    grid-column: 1 / -1;
+  }
+
+  .performance-admin-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

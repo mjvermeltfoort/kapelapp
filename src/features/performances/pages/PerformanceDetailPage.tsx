@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
+import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
+import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
@@ -32,13 +35,19 @@ export function PerformanceDetailPage() {
   }
 
   if (performanceQuery.isLoading) {
-    return <PageCard title="Optreden-detail" description="Optreden wordt geladen."><p>Laden…</p></PageCard>
+    return (
+      <PageCard title="Optreden-detail" description="Optreden wordt geladen.">
+        <LoadingState />
+      </PageCard>
+    )
   }
 
   if (performanceQuery.error instanceof Error || !performanceQuery.data) {
     return (
       <PageCard title="Optreden-detail" description="Optreden kon niet worden geladen.">
-        <p role="alert">{performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}</p>
+        <Alert tone="error">
+          {performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}
+        </Alert>
       </PageCard>
     )
   }
@@ -46,60 +55,78 @@ export function PerformanceDetailPage() {
   const performance = performanceQuery.data
 
   return (
-    <PageCard title={performance.title} description={`Status: ${performance.status}`}>
-      <dl>
-        <div>
-          <dt>Datum</dt>
-          <dd>{new Date(performance.performance_date).toLocaleDateString()}</dd>
-        </div>
-        <div>
-          <dt>Begintijd</dt>
-          <dd>{performance.start_time.slice(0, 5)}</dd>
-        </div>
-        <div>
-          <dt>Eindtijd</dt>
-          <dd>{performance.end_time?.slice(0, 5) ?? 'Niet ingevuld'}</dd>
-        </div>
-        <div>
-          <dt>Verzameltijd</dt>
-          <dd>{performance.gather_time?.slice(0, 5) ?? 'Niet ingevuld'}</dd>
-        </div>
-        <div>
-          <dt>Locatie</dt>
-          <dd>{performance.location}</dd>
-        </div>
-        <div>
-          <dt>Kaartlink</dt>
-          <dd>
+    <div className="page-grid">
+      <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
+        <div className="performance-hero">
+          <div className="performance-hero__status-row">
+            <Badge tone={mapStatusTone(performance.status)}>{formatStatusLabel(performance.status)}</Badge>
+            {performance.response_deadline ? (
+              <span className="performance-hero__deadline">
+                Reageren voor {new Date(performance.response_deadline).toLocaleDateString('nl-NL', {
+                  day: 'numeric',
+                  month: 'long',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="performance-meta-grid">
+            <div className="performance-meta-card">
+              <span className="performance-meta-card__label">Tijd</span>
+              <strong>
+                {performance.start_time.slice(0, 5)}
+                {performance.end_time ? ` - ${performance.end_time.slice(0, 5)}` : ''}
+              </strong>
+            </div>
+
+            <div className="performance-meta-card">
+              <span className="performance-meta-card__label">Verzamelen</span>
+              <strong>{performance.gather_time?.slice(0, 5) ?? 'Niet ingevuld'}</strong>
+            </div>
+
+            <div className="performance-meta-card performance-meta-card--wide">
+              <span className="performance-meta-card__label">Locatie</span>
+              <strong>{performance.location}</strong>
+            </div>
+          </div>
+
+          <div className="performance-description-card">
+            <span className="performance-meta-card__label">Meer informatie</span>
+            <p>{performance.description ?? 'Geen omschrijving toegevoegd.'}</p>
+          </div>
+
+          <div className="performance-actions">
             {performance.map_url ? (
-              <a href={performance.map_url} target="_blank" rel="noreferrer">
+              <a href={performance.map_url} target="_blank" rel="noreferrer" className="home-create-button performance-link-button">
                 Open kaart
               </a>
-            ) : (
-              'Niet ingevuld'
-            )}
-          </dd>
+            ) : null}
+
+            {canManagePerformances ? (
+              <div className="performance-admin-links">
+                <Link to={`/performances/${performance.id}/edit`} className="performance-secondary-link">
+                  Wijzigen
+                </Link>
+                <Link
+                  to={`/performances/${performance.id}/planner-overview`}
+                  className="performance-secondary-link"
+                >
+                  Planner-overzicht
+                </Link>
+              </div>
+            ) : null}
+          </div>
         </div>
-        <div>
-          <dt>Reactiedeadline</dt>
-          <dd>
-            {performance.response_deadline
-              ? new Date(performance.response_deadline).toLocaleString()
-              : 'Niet ingesteld'}
-          </dd>
-        </div>
-        <div>
-          <dt>Omschrijving</dt>
-          <dd>{performance.description ?? 'Geen omschrijving'}</dd>
-        </div>
-      </dl>
+      </PageCard>
 
       <PageCard
-        title="Jouw aanwezigheid"
+        title="Jouw reactie"
         description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht."
       >
-        {responseQuery.isLoading ? <p>Reactie wordt geladen…</p> : null}
-        {responseQuery.error instanceof Error ? <p role="alert" className="alert alert--error">{responseQuery.error.message}</p> : null}
+        {responseQuery.isLoading ? <LoadingState>Reactie wordt geladen…</LoadingState> : null}
+        {responseQuery.error instanceof Error ? <Alert tone="error">{responseQuery.error.message}</Alert> : null}
 
         <PerformanceResponseForm
           currentResponse={responseQuery.data ?? null}
@@ -113,13 +140,45 @@ export function PerformanceDetailPage() {
           }}
         />
       </PageCard>
-
-      {canManagePerformances ? (
-        <div className="inline-links">
-          <Link to={`/performances/${performance.id}/edit`}>Wijzigen</Link>
-          <Link to={`/performances/${performance.id}/planner-overview`}>Planner-overzicht</Link>
-        </div>
-      ) : null}
-    </PageCard>
+    </div>
   )
+}
+
+function formatLongDate(date: string) {
+  return new Date(date).toLocaleDateString('nl-NL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+function formatStatusLabel(status: 'draft' | 'published' | 'cancelled' | 'completed' | 'archived') {
+  switch (status) {
+    case 'draft':
+      return 'Concept'
+    case 'published':
+      return 'Gepubliceerd'
+    case 'cancelled':
+      return 'Geannuleerd'
+    case 'completed':
+      return 'Afgerond'
+    case 'archived':
+      return 'Gearchiveerd'
+  }
+}
+
+function mapStatusTone(status: 'draft' | 'published' | 'cancelled' | 'completed' | 'archived') {
+  switch (status) {
+    case 'draft':
+      return 'neutral' as const
+    case 'published':
+      return 'brand' as const
+    case 'cancelled':
+      return 'danger' as const
+    case 'completed':
+      return 'success' as const
+    case 'archived':
+      return 'neutral' as const
+  }
 }
