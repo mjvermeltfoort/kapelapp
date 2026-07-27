@@ -1632,3 +1632,147 @@ input[type='radio'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+@keyframes ui-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-card,
+.list-card-link,
+.invite-card,
+.member-card,
+.home-performance-card,
+.performance-meta-card,
+.performance-description-card,
+.stat-card,
+.alert,
+.empty-state,
+.band-tile--enhanced {
+  animation: ui-fade-in-up var(--duration-base) var(--ease-standard);
+  will-change: transform, opacity;
+}
+
+.page-card,
+.list-card-link,
+.invite-card,
+.member-card,
+.home-performance-card,
+.performance-meta-card,
+.performance-description-card,
+.band-tile,
+.stat-card,
+.tab-link,
+.nav-link,
+.performance-secondary-link,
+.home-create-button {
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-base) var(--ease-standard);
+}
+
+.page-card:hover,
+.list-card-link:hover,
+.invite-card:hover,
+.member-card:hover,
+.home-performance-card:hover,
+.performance-meta-card:hover,
+.performance-description-card:hover,
+.band-tile:hover,
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.response-option,
+.band-switch__track,
+.band-switch__thumb,
+.calendar-day,
+.calendar-day__button,
+.brand-panel,
+.brand-panel__item,
+.brand-panel__link {
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-base) var(--ease-standard);
+}
+
+.calendar-day__button--selected {
+  transform: scale(1.02);
+}
+
+.response-option:hover,
+.brand-panel__item:hover,
+.brand-panel__link:hover {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-card,
+  .list-card-link,
+  .invite-card,
+  .member-card,
+  .home-performance-card,
+  .performance-meta-card,
+  .performance-description-card,
+  .stat-card,
+  .alert,
+  .empty-state,
+  .band-tile--enhanced {
+    animation: none;
+  }
+
+  .page-card,
+  .list-card-link,
+  .invite-card,
+  .member-card,
+  .home-performance-card,
+  .performance-meta-card,
+  .performance-description-card,
+  .band-tile,
+  .stat-card,
+  .tab-link,
+  .nav-link,
+  .performance-secondary-link,
+  .home-create-button,
+  .response-option,
+  .band-switch__track,
+  .band-switch__thumb,
+  .calendar-day,
+  .calendar-day__button,
+  .brand-panel,
+  .brand-panel__item,
+  .brand-panel__link {
+    transition: none;
+  }
+
+  .page-card:hover,
+  .list-card-link:hover,
+  .invite-card:hover,
+  .member-card:hover,
+  .home-performance-card:hover,
+  .performance-meta-card:hover,
+  .performance-description-card:hover,
+  .band-tile:hover,
+  .stat-card:hover,
+  .response-option:hover,
+  .brand-panel__item:hover,
+  .brand-panel__link:hover,
+  .calendar-day__button--selected {
+    transform: none;
+  }
+}

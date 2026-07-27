@@ -372,3 +372,49 @@
     max-width: 34rem;
   }
 }
+
+.app-header,
+.install-banner,
+.app-nav {
+  animation: ui-fade-in-up var(--duration-slow) var(--ease-standard);
+}
+
+.brand-trigger,
+.nav-icon-link,
+.app-header,
+.install-banner,
+.app-nav {
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-base) var(--ease-standard);
+}
+
+.nav-icon-link:hover,
+.brand-trigger:hover {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header,
+  .install-banner,
+  .app-nav {
+    animation: none;
+  }
+
+  .brand-trigger,
+  .nav-icon-link,
+  .app-header,
+  .install-banner,
+  .app-nav {
+    transition: none;
+  }
+
+  .nav-icon-link:hover,
+  .brand-trigger:hover {
+    transform: none;
+  }
+}
