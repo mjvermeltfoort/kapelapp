@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
@@ -18,6 +18,7 @@ export function PerformanceDetailPage() {
   const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const queryClient = useQueryClient()
 
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
@@ -71,6 +72,7 @@ export function PerformanceDetailPage() {
 
     try {
       await deletePerformance(performance.id)
+      await queryClient.invalidateQueries({ queryKey: ['performances', activeMembership?.band.id] })
       await navigate('/performances', { replace: true })
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Verwijderen mislukt.')
