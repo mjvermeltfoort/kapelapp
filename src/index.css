@@ -25,12 +25,12 @@
   --color-success-50: #ecfdf3;
   --color-success-100: #d1fadf;
   --color-success-500: #10b981;
-  --color-success-700: #15803d;
+  --color-success-700: #166534;
 
   --color-warning-50: #fff7e8;
   --color-warning-100: #fdecc8;
   --color-warning-500: #f59e0b;
-  --color-warning-700: #b45309;
+  --color-warning-700: #92400e;
 
   --color-danger-50: #fff1f1;
   --color-danger-100: #fecaca;
@@ -60,6 +60,7 @@
   --color-background-pressed: #f3f1f8;
 
   --color-border-subtle: #ececf3;
+  --color-border-muted: #e4e6f0;
   --color-border-default: #d9dbe6;
   --color-border-strong: #c6cadd;
 
@@ -97,7 +98,7 @@
 
   --content-max-width: 42rem;
   --touch-target-min: 2.75rem;
-  --focus-ring: 0 0 0 3px rgb(91 33 182 / 0.18);
+  --focus-ring: 0 0 0 2px var(--color-background-surface), 0 0 0 5px var(--color-brand-500);
 
   font-family: var(--font-family-base);
   line-height: var(--font-line-height-base);
@@ -2418,7 +2419,7 @@ input[type='radio'] {
 .planner-modal__close:focus-visible,
 .planner-accordion__trigger:focus-visible,
 .planner-member__trigger:focus-visible {
-  outline: 3px solid var(--color-brand-300);
+  outline: 3px solid var(--color-brand-500);
   outline-offset: 2px;
 }
 
