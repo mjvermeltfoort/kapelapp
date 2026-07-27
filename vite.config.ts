@@ -12,8 +12,8 @@ export default defineConfig({
       includeAssets: ['favicon-v2.png', 'apple-touch-icon-v2.png', 'icons.svg', 'logo-v2.png'],
       manifest: {
         id: '/',
-        name: 'Kapelapp',
-        short_name: 'Kapelapp',
+        name: 'Kapel App',
+        short_name: 'Kapel App',
         description: 'Planning en afstemming voor kapellen en optredens.',
         theme_color: '#2456d6',
         background_color: '#f3f7fb',

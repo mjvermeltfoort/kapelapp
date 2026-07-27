@@ -123,8 +123,8 @@ export function AppLayout() {
           <div className="install-banner" role="region" aria-label="App installeren">
             <span className="install-banner__text">
               {installPrompt
-                ? 'Installeer Kapelapp voor snelle toegang vanaf je startscherm.'
-                : 'Installeer Kapelapp via Chrome-menu voor snelle toegang vanaf je startscherm.'}
+                ? 'Installeer Kapel App voor snelle toegang vanaf je startscherm.'
+                : 'Installeer Kapel App via Chrome-menu voor snelle toegang vanaf je startscherm.'}
             </span>
             {installPrompt ? (
               <button
@@ -155,9 +155,9 @@ export function AppLayout() {
                     : 'Open kapelmenu'
                 }
               >
-                <img src="/logo-v2.png" alt="Kapelapp logo" className="brand-logo" />
+                <img src="/logo-v2.png" alt="Kapel App logo" className="brand-logo" />
                 <div className="brand-text">
-                  <h1>Kapelapp</h1>
+                  <h1>Kapel App</h1>
                   <span className="subtitle">
                     {activeMembership ? activeMembership.band.name : 'Geen actieve kapel'}
                   </span>
