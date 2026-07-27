@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifestFilename: 'manifest.json',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons.svg'],
+      includeAssets: ['favicon-v2.png', 'apple-touch-icon-v2.png', 'icons.svg', 'logo-v2.png'],
       manifest: {
         id: '/',
         name: 'Kapelapp',
@@ -23,17 +23,17 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/icon-192-v2.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icon-512.png',
+            src: '/icon-512-v2.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/icon-512.png',
+            src: '/icon-512-v2.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',

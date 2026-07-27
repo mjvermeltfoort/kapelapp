@@ -142,7 +142,7 @@ export function AppLayout() {
                     : 'Open kapelmenu'
                 }
               >
-                <img src="/favicon.svg" alt="Kapelapp logo" className="brand-logo" />
+                <img src="/logo-v2.png" alt="Kapelapp logo" className="brand-logo" />
                 <div className="brand-text">
                   <h1>Kapelapp</h1>
                   <span className="subtitle">
