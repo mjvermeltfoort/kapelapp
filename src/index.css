@@ -1248,3 +1248,103 @@ input[type='radio'] {
   display: grid;
   gap: var(--space-3);
 }
+
+.band-overview-header,
+.band-settings-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.band-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.band-tile--enhanced {
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.band-tile__topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.band-tile__meta-row {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.band-link-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.band-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-background-surface);
+}
+
+.band-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.band-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.band-switch__track {
+  display: inline-flex;
+  align-items: center;
+  width: 3.25rem;
+  height: 1.9rem;
+  padding: 0.2rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-300);
+  transition: background-color var(--duration-base) var(--ease-standard);
+}
+
+.band-switch__track--active {
+  background: var(--color-brand-500);
+}
+
+.band-switch__thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-0);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.band-switch__track--active .band-switch__thumb {
+  transform: translateX(1.35rem);
+}
+
+@media (min-width: 720px) {
+  .band-link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .band-toggle-card {
+    align-items: flex-start;
+  }
+}

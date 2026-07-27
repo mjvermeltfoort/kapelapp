@@ -37,10 +37,12 @@ export function BandSwitcherPage() {
 
   return (
     <div className="page-grid">
-      <PageCard
-        title="Kapellenkiezer"
-        description="Kies actieve kapel voor volgende schermen. Nieuwe kapel wordt automatisch met owner-rol aangemaakt."
-      >
+      <PageCard title="Kapel" description="Kies je actieve kapel of maak een nieuwe aan.">
+        <div className="band-overview-header">
+          <Badge tone="brand">{memberships.length} kapel{memberships.length === 1 ? '' : 'len'}</Badge>
+          <p className="muted-text">Je wisselt hier welke kapel actief is in app.</p>
+        </div>
+
         {isLoading ? <LoadingState>Kapellen worden geladen…</LoadingState> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
 
@@ -48,7 +50,7 @@ export function BandSwitcherPage() {
           <EmptyState>Je bent nog geen lid van een kapel. Maak eerste kapel aan of gebruik later een uitnodigingslink.</EmptyState>
         ) : null}
 
-        <div className="stack-sm">
+        <div className="band-list">
           {memberships.map((membership) => {
             const isActive = membership.band_id === activeBandId
 
@@ -56,35 +58,42 @@ export function BandSwitcherPage() {
               <button
                 key={membership.id}
                 type="button"
-                className={isActive ? 'band-tile band-tile--active' : 'band-tile'}
+                className={isActive ? 'band-tile band-tile--active band-tile--enhanced' : 'band-tile band-tile--enhanced'}
                 onClick={() => setActiveBandId(membership.band_id)}
               >
-                <strong>{membership.band.name}</strong>
-                <span>Rol: {membership.role}</span>
-                <span>Instrument: {membership.instrument ?? 'Nog niet ingevuld'}</span>
-                <Badge tone={isActive ? 'brand' : 'neutral'}>
-                  {isActive ? 'Actieve kapel' : 'Tik om te selecteren'}
-                </Badge>
+                <div className="band-tile__topline">
+                  <strong>{membership.band.name}</strong>
+                  <Badge tone={isActive ? 'brand' : 'neutral'}>
+                    {isActive ? 'Actief' : 'Selecteren'}
+                  </Badge>
+                </div>
+                <span>{membership.band.description ?? 'Geen beschrijving toegevoegd'}</span>
+                <div className="band-tile__meta-row">
+                  <span>Rol: {membership.role}</span>
+                  <span>Instrument: {membership.instrument ?? 'Niet ingevuld'}</span>
+                </div>
               </button>
             )
           })}
         </div>
 
         {activeBandId ? (
-          <div className="inline-links">
-            <Link to="/performances">Ga naar optredens</Link>
-            <Link to="/settings/band">Kapelinstellingen</Link>
+          <div className="band-link-grid">
+            <Link to="/performances" className="performance-secondary-link">
+              Ga naar optredens
+            </Link>
+            <Link to="/settings/band" className="performance-secondary-link">
+              Kapelinstellingen
+            </Link>
           </div>
         ) : null}
       </PageCard>
 
       <PageCard
         title="Nieuwe kapel aanmaken"
-        description="Maakt band en owner-lidmaatschap in één stap aan via database-RPC."
+        description="Handig als startpunt wanneer je nog geen uitnodigingslink hebt."
       >
-        <p className="muted-text">Handig als startpunt wanneer je nog geen uitnodigingslink hebt.</p>
-
-        <form onSubmit={(event) => void handleSubmit(event)}>
+        <form onSubmit={(event) => void handleSubmit(event)} className="performance-form">
           <FormField label="Naam">
             <Input
               type="text"
@@ -97,12 +106,12 @@ export function BandSwitcherPage() {
             />
           </FormField>
 
-          <FormField label="Beschrijving">
+          <FormField label="Beschrijving" hint="Optioneel">
             <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={4}
-              placeholder="Optioneel"
+              placeholder="Korte uitleg over kapel"
             />
           </FormField>
 
