@@ -4,6 +4,7 @@ import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
+import { FormField, Select } from '../../../components/FormField'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -118,7 +119,19 @@ export function MembersPage() {
   }
 
   return (
-    <PageCard title={isSuperadmin ? 'Alle leden' : 'Leden- en rollenbeheer'}>
+    <PageCard
+      title={isSuperadmin ? 'Alle leden' : 'Leden'}
+      description={isSuperadmin ? 'Overzicht van alle leden in systeem.' : 'Beheer rollen en actieve leden van je kapel.'}
+    >
+      <div className="members-header">
+        <Badge tone="brand">
+          {(membersQuery.data ?? []).length} lid{(membersQuery.data ?? []).length === 1 ? '' : 'en'}
+        </Badge>
+        {!isSuperadmin && activeMembership ? (
+          <p className="muted-text">Kapel: {activeMembership.band.name}</p>
+        ) : null}
+      </div>
+
       {membersQuery.isLoading ? <LoadingState>Leden worden geladen…</LoadingState> : null}
       {membersQuery.error instanceof Error ? <Alert tone="error">{membersQuery.error.message}</Alert> : null}
       {message ? <Alert tone="success">{message}</Alert> : null}
@@ -128,7 +141,7 @@ export function MembersPage() {
         <EmptyState>Geen leden gevonden.</EmptyState>
       ) : null}
 
-      <div className="stack-sm">
+      <div className="members-list">
         {membersQuery.data?.map((member) => {
           const isPending = pendingKey?.includes(member.user_id) ?? false
           const canAssignOwner = isSuperadmin || activeMembership?.role === 'owner'
@@ -138,28 +151,45 @@ export function MembersPage() {
           const canChangeRole = isSuperadmin || canAssignOwner || member.role !== 'owner'
 
           return (
-            <div key={member.membership_id} className="member-card">
-              <div>
-                <strong>{member.display_name ?? member.email}</strong>
-                <p>{member.email}</p>
-                <p>Kapel: {member.band_name}</p>
-                <p>Instrument: {member.instrument ?? 'Niet ingevuld'}</p>
-                <p>
-                  Status:{' '}
-                  <Badge tone={member.is_active ? 'success' : 'neutral'}>
-                    {member.is_active ? 'Actief' : 'Inactief'}
-                  </Badge>
-                </p>
-                <p>
-                  Lid sinds: {new Date(member.joined_at).toLocaleDateString()}
-                  {member.left_at ? ` · Vertrokken: ${new Date(member.left_at).toLocaleDateString()}` : ''}
-                </p>
+            <div key={member.membership_id} className="member-card member-card--enhanced">
+              <div className="member-card__identity">
+                <div className="member-avatar" aria-hidden="true">
+                  {(member.display_name ?? member.email).slice(0, 1).toUpperCase()}
+                </div>
+
+                <div className="member-card__identity-text">
+                  <div className="member-card__topline">
+                    <strong>{member.display_name ?? member.email}</strong>
+                    <Badge tone={member.is_active ? 'success' : 'neutral'}>
+                      {member.is_active ? 'Actief' : 'Inactief'}
+                    </Badge>
+                  </div>
+                  <p>{member.email}</p>
+                </div>
               </div>
 
-              <div className="member-card__actions">
-                <label>
-                  Rol
-                  <select
+              <div className="member-card__details-grid">
+                <div>
+                  <span className="member-card__label">Kapel</span>
+                  <p>{member.band_name}</p>
+                </div>
+                <div>
+                  <span className="member-card__label">Instrument</span>
+                  <p>{member.instrument ?? 'Niet ingevuld'}</p>
+                </div>
+                <div>
+                  <span className="member-card__label">Lid sinds</span>
+                  <p>{new Date(member.joined_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <span className="member-card__label">Vertrokken</span>
+                  <p>{member.left_at ? new Date(member.left_at).toLocaleDateString() : '—'}</p>
+                </div>
+              </div>
+
+              <div className="member-card__actions member-card__actions--enhanced">
+                <FormField label="Rol">
+                  <Select
                     value={member.role}
                     disabled={!canChangeRole || isPending}
                     onChange={(event) =>
@@ -168,11 +198,11 @@ export function MembersPage() {
                   >
                     {roleChoices.map((role) => (
                       <option key={role} value={role}>
-                        {role}
+                        {formatRoleLabel(role)}
                       </option>
                     ))}
-                  </select>
-                </label>
+                  </Select>
+                </FormField>
 
                 {member.is_active ? (
                   <Button
@@ -196,4 +226,17 @@ export function MembersPage() {
       </div>
     </PageCard>
   )
+}
+
+function formatRoleLabel(role: BandMembership['role']) {
+  switch (role) {
+    case 'member':
+      return 'Lid'
+    case 'planner':
+      return 'Planner'
+    case 'admin':
+      return 'Admin'
+    case 'owner':
+      return 'Eigenaar'
+  }
 }
