@@ -1,18 +1,23 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
+import { Button } from '../../../components/Button'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
-import { getPerformance } from '../api/performances'
+import { deletePerformance, getPerformance } from '../api/performances'
 
 export function PerformanceDetailPage() {
+  const navigate = useNavigate()
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
   const canManagePerformances = ['planner', 'admin', 'owner'].includes(activeMembership?.role ?? '')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
@@ -53,6 +58,25 @@ export function PerformanceDetailPage() {
   }
 
   const performance = performanceQuery.data
+
+  async function handleDelete() {
+    const confirmed = window.confirm(`Weet je zeker dat je ${performance.title} wilt verwijderen?`)
+
+    if (!confirmed) {
+      return
+    }
+
+    setDeleteError(null)
+    setIsDeleting(true)
+
+    try {
+      await deletePerformance(performance.id)
+      await navigate('/performances', { replace: true })
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Verwijderen mislukt.')
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <div className="page-grid">
@@ -115,8 +139,19 @@ export function PerformanceDetailPage() {
                 >
                   Planner-overzicht
                 </Link>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => void handleDelete()}
+                  disabled={isDeleting}
+                  fullWidth
+                >
+                  {isDeleting ? 'Optreden wordt verwijderd…' : 'Optreden verwijderen'}
+                </Button>
               </div>
             ) : null}
+
+            {deleteError ? <Alert tone="error">{deleteError}</Alert> : null}
           </div>
         </div>
       </PageCard>

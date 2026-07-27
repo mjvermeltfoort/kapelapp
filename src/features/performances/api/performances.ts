@@ -193,6 +193,14 @@ export async function updatePerformance(
   return data as Performance
 }
 
+export async function deletePerformance(performanceId: string): Promise<void> {
+  const { error } = await supabase.from('performances').delete().eq('id', performanceId)
+
+  if (error) {
+    throw error
+  }
+}
+
 export async function getPerformanceResponseOverview(
   performanceId: string,
 ): Promise<PerformanceOverview> {
