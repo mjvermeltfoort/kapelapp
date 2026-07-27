@@ -55,12 +55,11 @@ export function LoginPage() {
     setMessage(null)
     setIsOtpLoading(true)
 
-    const callbackUrl = new URL('/auth/callback', window.location.origin)
-    callbackUrl.searchParams.set('redirectTo', redirectTo)
-
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: callbackUrl.toString() },
+      options: {
+        shouldCreateUser: true,
+      },
     })
 
     if (otpError) {
@@ -69,15 +68,16 @@ export function LoginPage() {
       return
     }
 
-    setMessage('Inloglink verzonden. Controleer je e-mail.')
-    navigate(`/otp?email=${encodeURIComponent(email)}`)
+    setMessage('Verificatiecode verzonden. Controleer je e-mail.')
+    navigate(`/otp?email=${encodeURIComponent(email)}&redirectTo=${encodeURIComponent(redirectTo)}`)
+    setIsOtpLoading(false)
   }
 
   return (
     <main className="auth-page">
       <PageCard
         title="Inloggen"
-        description="Gebruik Google of een inloglink per e-mail."
+        description="Gebruik Google of een verificatiecode per e-mail."
       >
         {!isConfigured ? (
           <Alert tone="error">
@@ -86,7 +86,7 @@ export function LoginPage() {
         ) : null}
 
         <p className="muted-text">
-          Gebruik bij voorkeur steeds hetzelfde e-mailadres voor Google en een inloglink.
+          Gebruik bij voorkeur steeds hetzelfde e-mailadres voor Google en e-mailcodes.
         </p>
 
         <Button
@@ -109,7 +109,7 @@ export function LoginPage() {
             />
           </FormField>
           <Button type="submit" disabled={isGoogleLoading || isOtpLoading} fullWidth>
-            {isOtpLoading ? 'Inloglink wordt verstuurd…' : 'Stuur inloglink'}
+            {isOtpLoading ? 'Code wordt verstuurd…' : 'Stuur verificatiecode'}
           </Button>
         </form>
 
