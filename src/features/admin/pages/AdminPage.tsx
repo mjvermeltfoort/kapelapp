@@ -1,4 +1,5 @@
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Icon } from '../../../components/Icon'
 import { PageCard } from '../../../components/PageCard'
 import { TabLink, Tabs } from '../../../components/Tabs'
 import { isAdminRole } from '../../../lib/roles'
@@ -15,6 +16,7 @@ const tabs = [
 type TabKey = (typeof tabs)[number]['key']
 
 export function AdminPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { profile } = useAuth()
   const { activeMembership } = useBand()
@@ -29,9 +31,18 @@ export function AdminPage() {
     return <Navigate to="/performances" replace />
   }
 
+  function handleBack() {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/performances', { replace: true })
+  }
+
   if (!activeMembership && activeTab !== 'members') {
     return (
-      <PageCard title="Beheer">
+      <PageCard title="Beheer" backTo="/performances">
         <p>Kies eerst een actieve kapel.</p>
       </PageCard>
     )
@@ -39,18 +50,23 @@ export function AdminPage() {
 
   return (
     <div className="page-grid">
-      <Tabs aria-label="Beheeronderdelen">
-        {tabs.map((tab) => (
-          <TabLink
-            key={tab.key}
-            to={`/admin?tab=${tab.key}`}
-            replace={activeTab === tab.key}
-            isActive={tab.key === activeTab}
-          >
-            {tab.label}
-          </TabLink>
-        ))}
-      </Tabs>
+      <div className="admin-tab-header">
+        <button type="button" className="page-card__back-button admin-tab-header__back" onClick={handleBack} aria-label="Terug">
+          <Icon name="back" className="page-card__back-icon" />
+        </button>
+        <Tabs aria-label="Beheeronderdelen">
+          {tabs.map((tab) => (
+            <TabLink
+              key={tab.key}
+              to={`/admin?tab=${tab.key}`}
+              replace={activeTab === tab.key}
+              isActive={tab.key === activeTab}
+            >
+              {tab.label}
+            </TabLink>
+          ))}
+        </Tabs>
+      </div>
 
       {activeTab === 'members' ? <MembersPage /> : null}
       {activeTab === 'band' ? <BandSettingsPage /> : null}

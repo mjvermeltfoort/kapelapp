@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
@@ -12,7 +11,6 @@ import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
 
 export function ProfilePage() {
-  const navigate = useNavigate()
   const { profile, saveProfile, signOut, user } = useAuth()
   const { activeMembership, leaveActiveBand, refreshBands, saveMyInstrument } = useBand()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
@@ -130,21 +128,9 @@ export function ProfilePage() {
   const profileEmail = profile?.email ?? user?.email ?? 'Onbekend'
   const initials = (profile?.display_name ?? user?.email ?? 'K').trim().slice(0, 1).toUpperCase()
 
-  function handleBack() {
-    if (window.history.length > 1) {
-      navigate(-1)
-      return
-    }
-
-    navigate('/', { replace: true })
-  }
-
   return (
     <div className="page-grid">
-      <Button type="button" variant="ghost" onClick={handleBack}>
-        Terug
-      </Button>
-      <PageCard title="Profiel" description="Jouw account en persoonlijke gegevens.">
+      <PageCard title="Profiel" description="Jouw account en persoonlijke gegevens." backTo="/performances">
         <div className="profile-hero">
           <div className="profile-hero__avatar" aria-hidden="true">
             {initials}

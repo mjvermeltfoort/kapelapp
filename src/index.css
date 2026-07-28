@@ -2456,6 +2456,26 @@ input[type='radio'] {
   outline-offset: 2px;
 }
 
+.admin-tab-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.admin-tab-header .tab-nav {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-tab-header .tab-link {
+  min-width: 0;
+}
+
+.admin-tab-header__back {
+  flex-shrink: 0;
+}
+
 .performance-response-groups {
   display: grid;
   gap: 0.75rem;
