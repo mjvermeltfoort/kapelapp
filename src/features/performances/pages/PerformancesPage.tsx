@@ -26,15 +26,15 @@ export function PerformancesPage() {
     enabled: Boolean(activeMembership?.band.id),
   })
 
+  const performanceIds = useMemo(
+    () => (performancesQuery.data ?? []).map((performance) => performance.id),
+    [performancesQuery.data],
+  )
+
   const responsesQuery = useQuery({
-    queryKey: [
-      'my-performance-responses',
-      activeMembership?.band.id,
-      performancesQuery.data?.length ?? 0,
-    ],
-    queryFn: async () =>
-      listMyPerformanceResponses((performancesQuery.data ?? []).map((performance) => performance.id)),
-    enabled: Boolean(activeMembership?.band.id && performancesQuery.data?.length),
+    queryKey: ['my-performance-responses', activeMembership?.band.id, performanceIds.join(',')],
+    queryFn: async () => listMyPerformanceResponses(performanceIds),
+    enabled: Boolean(activeMembership?.band.id && performanceIds.length),
   })
 
   const upcomingPerformances = useMemo(() => {

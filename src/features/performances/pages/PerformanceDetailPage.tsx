@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
@@ -13,6 +13,7 @@ import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 
 export function PerformanceDetailPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
@@ -145,7 +146,10 @@ export function PerformanceDetailPage() {
               response: input.response,
               reason: input.reason,
             })
-            await responseQuery.refetch()
+            await Promise.all([
+              responseQuery.refetch(),
+              queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
+            ])
           }}
         />
       </PageCard>
