@@ -27,6 +27,7 @@ export function AppLayout() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
+  const canManageBand = profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isStandalone, setIsStandalone] = useState(false)
@@ -37,17 +38,17 @@ export function AppLayout() {
 
     if (activeMembership) {
       items.push({ to: '/performances', label: 'Optredens', icon: 'performances' })
-      items.push({ to: '/bands', label: 'Kapel', icon: 'bands' })
     }
 
-    if (profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')) {
+    if (canManageBand) {
+      items.push({ to: '/bands', label: 'Kapel', icon: 'bands' })
       items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
     }
 
     items.push({ to: '/profile', label: 'Profiel', icon: 'profile' })
 
     return items
-  }, [activeMembership, profile?.is_superadmin])
+  }, [activeMembership, canManageBand])
 
   const showCreatePerformanceAction = location.pathname === '/performances' && canManage(activeMembership?.role)
 
@@ -185,11 +186,13 @@ export function AppLayout() {
                     ))}
                   </div>
 
-                  <div className="brand-panel__footer">
-                    <Link to="/bands" className="brand-panel__link" onClick={() => setIsBandMenuOpen(false)}>
-                      Kapellen beheren
-                    </Link>
-                  </div>
+                  {canManageBand ? (
+                    <div className="brand-panel__footer">
+                      <Link to="/bands" className="brand-panel__link" onClick={() => setIsBandMenuOpen(false)}>
+                        Kapellen beheren
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </div>
