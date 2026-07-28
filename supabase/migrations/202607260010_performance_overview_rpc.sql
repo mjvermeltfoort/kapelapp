@@ -26,7 +26,7 @@ begin
     raise exception 'Performance not found';
   end if;
 
-  if not public.has_band_role(v_band_id, array['planner', 'admin', 'owner']) then
+  if not public.can_view_member_responses(v_band_id) then
     raise exception 'Insufficient permissions';
   end if;
 

@@ -8,7 +8,7 @@ import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
-import { getPerformance } from '../api/performances'
+import { getPerformance, getPerformanceResponseOverview, type PerformanceOverviewPerson } from '../api/performances'
 import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 
 export function PerformanceDetailPage() {
@@ -29,6 +29,12 @@ export function PerformanceDetailPage() {
     queryKey: ['my-performance-response', performanceId],
     queryFn: async () => getMyPerformanceResponse(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
+  })
+
+  const memberResponsesQuery = useQuery({
+    queryKey: ['performance-response-overview', performanceId],
+    queryFn: async () => getPerformanceResponseOverview(performanceId ?? ''),
+    enabled: Boolean(performanceId && activeMembership?.band.id && activeMembership.band.show_member_responses),
   })
 
   if (!activeMembership) {
@@ -62,7 +68,7 @@ export function PerformanceDetailPage() {
   return (
     <>
       <div className="page-grid">
-      <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
+        <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
         <div className="performance-hero">
           <div className="performance-hero__status-row">
             <Badge tone={mapStatusTone(performance.status)}>{formatStatusLabel(performance.status)}</Badge>
@@ -129,9 +135,9 @@ export function PerformanceDetailPage() {
             ) : null}
           </div>
         </div>
-      </PageCard>
+        </PageCard>
 
-      <PageCard
+        <PageCard
         title="Jouw reactie"
         description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht."
       >
@@ -150,9 +156,28 @@ export function PerformanceDetailPage() {
               responseQuery.refetch(),
               queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
             ])
+            navigate('/performances', { replace: true })
           }}
         />
-      </PageCard>
+        </PageCard>
+
+        {activeMembership.band.show_member_responses ? (
+        <PageCard title="Reacties van leden" description="Lijst van reacties die leden hebben gedeeld.">
+          {memberResponsesQuery.isLoading ? <LoadingState>Reacties worden geladen…</LoadingState> : null}
+          {memberResponsesQuery.error instanceof Error ? (
+            <Alert tone="error">{memberResponsesQuery.error.message}</Alert>
+          ) : null}
+
+          {memberResponsesQuery.data ? (
+            <div className="performance-response-groups">
+              <ResponseGroup title="Aanwezig" tone="yes" people={memberResponsesQuery.data.yes} />
+              <ResponseGroup title="Misschien" tone="maybe" people={memberResponsesQuery.data.maybe} />
+              <ResponseGroup title="Afwezig" tone="no" people={memberResponsesQuery.data.no} />
+              <ResponseGroup title="Nog niet" tone="none" people={memberResponsesQuery.data.no_response} />
+            </div>
+          ) : null}
+        </PageCard>
+        ) : null}
       </div>
 
       <PlannerOverviewModal
@@ -203,4 +228,34 @@ function mapStatusTone(status: 'draft' | 'published' | 'cancelled' | 'completed'
     case 'archived':
       return 'neutral' as const
   }
+}
+
+function ResponseGroup({
+  title,
+  tone,
+  people,
+}: {
+  title: string
+  tone: 'yes' | 'maybe' | 'no' | 'none'
+  people: PerformanceOverviewPerson[]
+}) {
+  if (!people.length) {
+    return null
+  }
+
+  return (
+    <section className={`performance-response-group performance-response-group--${tone}`}>
+      <div className="performance-response-group__header">
+        <strong>{title}</strong>
+        <span>{people.length}</span>
+      </div>
+      <div className="performance-response-group__names">
+        {people.map((person) => (
+          <span key={person.user_id} className="performance-response-group__name">
+            {person.display_name}
+          </span>
+        ))}
+      </div>
+    </section>
+  )
 }

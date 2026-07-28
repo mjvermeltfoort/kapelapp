@@ -2394,6 +2394,45 @@ input[type='radio'] {
   gap: 0.5rem;
 }
 
+.planner-instrument-card__people {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.planner-instrument-card__people-line {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.planner-instrument-card__people-label {
+  font-size: 0.78rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.planner-instrument-card__people-label--yes { color: #15803d; }
+.planner-instrument-card__people-label--maybe { color: #c2410c; }
+.planner-instrument-card__people-label--no { color: #b91c1c; }
+.planner-instrument-card__people-label--none { color: #475569; }
+
+.planner-instrument-card__names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.planner-instrument-card__name {
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background-surface) 88%, var(--color-brand-50));
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
 .planner-count-badge {
   display: inline-flex;
   min-height: 2rem;
@@ -2416,6 +2455,59 @@ input[type='radio'] {
   outline: 3px solid var(--color-brand-500);
   outline-offset: 2px;
 }
+
+.performance-response-groups {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.performance-response-group {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  border: 1px solid var(--color-border-muted);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%);
+}
+
+.performance-response-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.performance-response-group__header strong {
+  font-size: 0.98rem;
+}
+
+.performance-response-group__header span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.performance-response-group__names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.performance-response-group__name {
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background-surface) 88%, var(--color-brand-50));
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
+.performance-response-group--yes .performance-response-group__header strong { color: #15803d; }
+.performance-response-group--maybe .performance-response-group__header strong { color: #c2410c; }
+.performance-response-group--no .performance-response-group__header strong { color: #b91c1c; }
+.performance-response-group--none .performance-response-group__header strong { color: #475569; }
 
 @media (min-width: 768px) {
   .planner-modal-backdrop {

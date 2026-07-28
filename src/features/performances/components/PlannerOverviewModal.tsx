@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { LoadingState } from '../../../components/LoadingState'
-import { getPerformanceResponseOverview, type Performance } from '../api/performances'
+import { getPerformanceResponseOverview, type Performance, type PerformanceOverviewPerson } from '../api/performances'
 import { InstrumentCard } from './InstrumentCard'
 import { ResponseAccordion } from './ResponseAccordion'
 import { StatCard } from './StatCard'
@@ -138,10 +138,6 @@ export function PlannerOverviewModal({
     }
   }, [])
 
-  if (!isOpen) {
-    return null
-  }
-
   async function handleCopyReminder() {
     if (!reminderText) {
       return
@@ -213,6 +209,77 @@ export function PlannerOverviewModal({
   }
 
   const overview = overviewQuery.data
+  const instrumentGroups = useMemo(() => {
+    if (!overview) {
+      return []
+    }
+
+    const grouped = new Map<
+      string,
+      {
+        instrument: string
+        yes: PerformanceOverviewPerson[]
+        maybe: PerformanceOverviewPerson[]
+        no: PerformanceOverviewPerson[]
+        no_response: PerformanceOverviewPerson[]
+      }
+    >()
+
+    function ensureGroup(instrument: string) {
+      const key = normalizeInstrumentName(instrument)
+      const existing = grouped.get(key)
+
+      if (existing) {
+        return existing
+      }
+
+      const next = {
+        instrument,
+        yes: [],
+        maybe: [],
+        no: [],
+        no_response: [],
+      }
+
+      grouped.set(key, next)
+      return next
+    }
+
+    for (const person of overview.yes) {
+      ensureGroup(person.instrument ?? 'Onbekend').yes.push(person)
+    }
+
+    for (const person of overview.maybe) {
+      ensureGroup(person.instrument ?? 'Onbekend').maybe.push(person)
+    }
+
+    for (const person of overview.no) {
+      ensureGroup(person.instrument ?? 'Onbekend').no.push(person)
+    }
+
+    for (const person of overview.no_response) {
+      ensureGroup(person.instrument ?? 'Onbekend').no_response.push(person)
+    }
+
+    return overview.instrument_counts.map((item) => {
+      const group = grouped.get(normalizeInstrumentName(item.instrument)) ?? {
+        instrument: item.instrument,
+        yes: [],
+        maybe: [],
+        no: [],
+        no_response: [],
+      }
+
+      return {
+        item,
+        people: group,
+      }
+    })
+  }, [overview])
+
+  if (!isOpen) {
+    return null
+  }
 
   return (
     <div
@@ -392,8 +459,8 @@ export function PlannerOverviewModal({
 
                 {overview.instrument_counts.length ? (
                   <div className="planner-instrument-scroll" aria-label="Verdeling per instrument">
-                    {overview.instrument_counts.map((item) => (
-                      <InstrumentCard key={item.instrument} item={item} />
+                    {instrumentGroups.map(({ item, people }) => (
+                      <InstrumentCard key={item.instrument} item={item} people={people} />
                     ))}
                   </div>
                 ) : (
@@ -429,4 +496,8 @@ function formatStatusLabel(status: Performance['status']) {
     case 'archived':
       return 'Gearchiveerd'
   }
+}
+
+function normalizeInstrumentName(name: string) {
+  return name.trim().toLowerCase()
 }

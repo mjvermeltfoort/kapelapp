@@ -1,10 +1,16 @@
-import type { PerformanceOverviewInstrumentCount } from '../api/performances'
+import type { PerformanceOverviewInstrumentCount, PerformanceOverviewPerson } from '../api/performances'
 
 type InstrumentCardProps = {
   item: PerformanceOverviewInstrumentCount
+  people: {
+    yes: PerformanceOverviewPerson[]
+    maybe: PerformanceOverviewPerson[]
+    no: PerformanceOverviewPerson[]
+    no_response: PerformanceOverviewPerson[]
+  }
 }
 
-export function InstrumentCard({ item }: InstrumentCardProps) {
+export function InstrumentCard({ item, people }: InstrumentCardProps) {
   return (
     <article className="planner-instrument-card">
       <div className="planner-instrument-card__top">
@@ -23,7 +29,43 @@ export function InstrumentCard({ item }: InstrumentCardProps) {
         {item.no > 0 ? <span className="planner-count-badge planner-count-badge--no">❌ {item.no}</span> : null}
         {item.no_response > 0 ? <span className="planner-count-badge planner-count-badge--none">🕒 {item.no_response}</span> : null}
       </div>
+
+      <div className="planner-instrument-card__people">
+        <PeopleLine tone="yes" label="Aanwezig" people={people.yes} />
+        <PeopleLine tone="maybe" label="Misschien" people={people.maybe} />
+        <PeopleLine tone="no" label="Afwezig" people={people.no} />
+        <PeopleLine tone="none" label="Nog niet" people={people.no_response} />
+      </div>
     </article>
+  )
+}
+
+function PeopleLine({
+  tone,
+  label,
+  people,
+}: {
+  tone: 'yes' | 'maybe' | 'no' | 'none'
+  label: string
+  people: PerformanceOverviewPerson[]
+}) {
+  if (!people.length) {
+    return null
+  }
+
+  return (
+    <div className="planner-instrument-card__people-line">
+      <span className={['planner-instrument-card__people-label', `planner-instrument-card__people-label--${tone}`].join(' ')}>
+        {label}
+      </span>
+      <div className="planner-instrument-card__names">
+        {people.map((person) => (
+          <span key={person.user_id} className="planner-instrument-card__name" title={person.display_name}>
+            {person.display_name}
+          </span>
+        ))}
+      </div>
+    </div>
   )
 }
 

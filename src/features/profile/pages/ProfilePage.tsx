@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
@@ -11,6 +12,7 @@ import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
 
 export function ProfilePage() {
+  const navigate = useNavigate()
   const { profile, saveProfile, signOut, user } = useAuth()
   const { activeMembership, leaveActiveBand, refreshBands, saveMyInstrument } = useBand()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
@@ -130,6 +132,9 @@ export function ProfilePage() {
 
   return (
     <div className="page-grid">
+      <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+        Terug
+      </Button>
       <PageCard title="Profiel" description="Jouw account en persoonlijke gegevens.">
         <div className="profile-hero">
           <div className="profile-hero__avatar" aria-hidden="true">
