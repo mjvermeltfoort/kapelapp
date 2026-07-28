@@ -9,7 +9,9 @@ import './index.css'
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    void updateSW(true)
+    void updateSW(true).then(() => {
+      window.location.reload()
+    })
   },
 })
 
