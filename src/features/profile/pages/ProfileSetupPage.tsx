@@ -97,6 +97,7 @@ export function ProfileSetupPage() {
       <PageCard
         title="Eerste profielinstelling"
         description="Kies weergavenaam waarmee andere leden je zien."
+        backTo="/profile"
       >
         <form onSubmit={(event) => void handleSubmit(event)}>
           <label>

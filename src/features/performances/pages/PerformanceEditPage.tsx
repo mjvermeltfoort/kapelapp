@@ -27,7 +27,7 @@ export function PerformanceEditPage() {
 
   if (!activeMembership) {
     return (
-      <PageCard title="Optreden wijzigen" description="Kies eerst een actieve kapel.">
+      <PageCard title="Optreden wijzigen" description="Kies eerst een actieve kapel." backTo="/performances">
         <p>Ga eerst naar kapellenkiezer en selecteer een kapel.</p>
       </PageCard>
     )
@@ -35,7 +35,7 @@ export function PerformanceEditPage() {
 
   if (!canManagePerformances) {
     return (
-      <PageCard title="Optreden wijzigen" description="Alleen planners, admins en owners kunnen optredens beheren.">
+      <PageCard title="Optreden wijzigen" description="Alleen planners, admins en owners kunnen optredens beheren." backTo="/performances">
         <p>Je huidige rol heeft geen toegang tot dit scherm.</p>
       </PageCard>
     )
@@ -43,7 +43,7 @@ export function PerformanceEditPage() {
 
   if (performanceQuery.isLoading) {
     return (
-      <PageCard title="Optreden wijzigen" description="Optreden wordt geladen.">
+      <PageCard title="Optreden wijzigen" description="Optreden wordt geladen." backTo="/performances">
         <LoadingState />
       </PageCard>
     )
@@ -51,7 +51,7 @@ export function PerformanceEditPage() {
 
   if (performanceQuery.error instanceof Error || !performanceQuery.data) {
     return (
-      <PageCard title="Optreden wijzigen" description="Optreden kon niet worden geladen.">
+      <PageCard title="Optreden wijzigen" description="Optreden kon niet worden geladen." backTo="/performances">
         <Alert tone="error">
           {performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}
         </Alert>
@@ -76,7 +76,7 @@ export function PerformanceEditPage() {
   }
 
   return (
-    <PageCard title="Optreden wijzigen" description={`Werk ${performance.title} bij.`}>
+    <PageCard title="Optreden wijzigen" description={`Werk ${performance.title} bij.`} backTo={`/performances/${performance.id}`}>
       <PerformanceForm
         mode="edit"
         submitLabel="Wijzigingen opslaan"

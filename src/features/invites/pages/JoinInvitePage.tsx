@@ -59,6 +59,7 @@ export function JoinInvitePage() {
       <PageCard
         title="Uitnodiging accepteren"
         description="Controleer uitnodiging en meld je daarna aan bij kapel."
+        backTo="/login"
       >
         {previewQuery.isLoading ? <p>Uitnodiging wordt gecontroleerd…</p> : null}
         {previewQuery.error instanceof Error ? <p role="alert">{previewQuery.error.message}</p> : null}

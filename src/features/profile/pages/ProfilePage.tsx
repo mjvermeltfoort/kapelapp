@@ -130,9 +130,18 @@ export function ProfilePage() {
   const profileEmail = profile?.email ?? user?.email ?? 'Onbekend'
   const initials = (profile?.display_name ?? user?.email ?? 'K').trim().slice(0, 1).toUpperCase()
 
+  function handleBack() {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/', { replace: true })
+  }
+
   return (
     <div className="page-grid">
-      <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+      <Button type="button" variant="ghost" onClick={handleBack}>
         Terug
       </Button>
       <PageCard title="Profiel" description="Jouw account en persoonlijke gegevens.">

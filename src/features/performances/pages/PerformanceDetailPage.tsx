@@ -34,7 +34,7 @@ export function PerformanceDetailPage() {
 
   if (!activeMembership) {
     return (
-      <PageCard title="Optreden-detail" description="Kies eerst een actieve kapel.">
+      <PageCard title="Optreden-detail" description="Kies eerst een actieve kapel." backTo="/performances">
         <p>Ga eerst naar kapellenkiezer en selecteer een kapel.</p>
       </PageCard>
     )
@@ -42,7 +42,7 @@ export function PerformanceDetailPage() {
 
   if (performanceQuery.isLoading) {
     return (
-      <PageCard title="Optreden-detail" description="Optreden wordt geladen.">
+      <PageCard title="Optreden-detail" description="Optreden wordt geladen." backTo="/performances">
         <LoadingState />
       </PageCard>
     )
@@ -50,7 +50,7 @@ export function PerformanceDetailPage() {
 
   if (performanceQuery.error instanceof Error || !performanceQuery.data) {
     return (
-      <PageCard title="Optreden-detail" description="Optreden kon niet worden geladen.">
+      <PageCard title="Optreden-detail" description="Optreden kon niet worden geladen." backTo="/performances">
         <Alert tone="error">
           {performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}
         </Alert>
@@ -63,7 +63,7 @@ export function PerformanceDetailPage() {
   return (
     <>
       <div className="page-grid">
-        <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
+        <PageCard title={performance.title} description={formatLongDate(performance.performance_date)} backTo="/performances">
           <div className="performance-hero">
             <div className="performance-hero__status-row">
               <Badge tone={mapStatusTone(performance.status)}>{formatStatusLabel(performance.status)}</Badge>

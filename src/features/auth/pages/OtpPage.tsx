@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { FormField, Input } from '../../../components/FormField'
@@ -80,6 +80,7 @@ export function OtpPage() {
             ? `Vul de verificatiecode in die is gestuurd naar ${email}.`
             : 'Vul de verificatiecode uit je e-mail in.'
         }
+        backTo="/login"
       >
         <form onSubmit={(event) => void handleSubmit(event)} className="performance-form">
           <FormField label="Verificatiecode">
@@ -105,8 +106,6 @@ export function OtpPage() {
 
         {message ? <Alert tone="success">{message}</Alert> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
-
-        <Link to="/login">Terug naar inloggen</Link>
       </PageCard>
     </main>
   )

@@ -115,7 +115,7 @@ export function BandSettingsPage() {
 
   if (!activeMembership) {
     return (
-      <PageCard title="Kapelinstellingen">
+      <PageCard title="Kapelinstellingen" backTo="/admin?tab=band">
         <p>Kies eerst een actieve kapel.</p>
       </PageCard>
     )
@@ -235,7 +235,7 @@ export function BandSettingsPage() {
   }
 
   return (
-    <PageCard title="Kapelinstellingen" description="Pas naam, uitleg en zichtbaarheid van reacties aan.">
+    <PageCard title="Kapelinstellingen" description="Pas naam, uitleg en zichtbaarheid van reacties aan." backTo="/admin?tab=band">
       <div className="band-settings-header">
         <Badge tone={canManageBand ? 'brand' : 'neutral'}>{activeMembership.role}</Badge>
         <p className="muted-text">Actieve kapel: {activeMembership.band.name}</p>
