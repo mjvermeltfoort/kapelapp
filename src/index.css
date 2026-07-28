@@ -2433,6 +2433,25 @@ input[type='radio'] {
   }
 }
 
+@media (max-width: 767px) {
+  .planner-modal-backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .planner-modal {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .planner-modal__handle {
+    touch-action: none;
+  }
+}
+
 @media (max-width: 640px) {
   .planner-modal__section-head {
     align-items: start;

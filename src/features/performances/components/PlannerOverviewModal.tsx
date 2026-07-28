@@ -231,11 +231,14 @@ export function PlannerOverviewModal({
         aria-modal="true"
         aria-labelledby="planner-modal-title"
         style={{ transform: dragOffset ? `translateY(${dragOffset}px)` : undefined }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        <div className="planner-modal__handle" aria-hidden="true" />
+        <div
+          className="planner-modal__handle"
+          aria-hidden="true"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        />
 
         <button
           ref={closeButtonRef}
