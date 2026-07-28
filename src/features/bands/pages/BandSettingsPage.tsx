@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
@@ -7,6 +7,7 @@ import { FormField, Input, Textarea } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { isAdminRole } from '../../../lib/roles'
 import { getCurrentBandInvite, regenerateBandInvite } from '../../invites/api/invites'
+import { listBandMembers } from '../../members/api/members'
 import { createBandInstrument, deactivateBandInstrument, listBandInstruments, updateBandInstrument } from '../api/instruments'
 import { updateBand } from '../api/bands'
 import { useBand } from '../hooks/useBand'
@@ -54,6 +55,34 @@ export function BandSettingsPage() {
     queryFn: async () => listBandInstruments(bandId, true),
     enabled: canManageBand && Boolean(bandId),
   })
+
+  const membersQuery = useQuery({
+    queryKey: ['band-members', bandId],
+    queryFn: async () => listBandMembers(bandId),
+    enabled: canManageBand && Boolean(bandId),
+  })
+
+  const existingInstrumentNames = useMemo(
+    () => new Set((instrumentsQuery.data ?? []).map((instrument) => normalizeInstrumentName(instrument.name))),
+    [instrumentsQuery.data],
+  )
+
+  const missingMemberInstruments = useMemo(() => {
+    const seen = new Set<string>()
+
+    return (membersQuery.data ?? [])
+      .filter((member) => member.is_active && member.instrument?.trim())
+      .map((member) => member.instrument!.trim())
+      .filter((instrument) => {
+        const normalized = normalizeInstrumentName(instrument)
+        if (existingInstrumentNames.has(normalized) || seen.has(normalized)) {
+          return false
+        }
+
+        seen.add(normalized)
+        return true
+      })
+  }, [existingInstrumentNames, membersQuery.data])
 
   const joinUrl = inviteQuery.data ? `${window.location.origin}/join/${inviteQuery.data.token}` : ''
 
@@ -143,14 +172,26 @@ export function BandSettingsPage() {
       return
     }
 
+    await addInstrument(newInstrumentName, () => setNewInstrumentName(''))
+  }
+
+  async function handleAddMissingInstrument(instrumentName: string) {
+    await addInstrument(instrumentName)
+  }
+
+  async function addInstrument(instrumentName: string, onSuccess?: () => void) {
+    if (!canManageBand) {
+      return
+    }
+
     setInstrumentMessage(null)
     setInstrumentError(null)
     setIsSavingInstrument(true)
 
     try {
-      await createBandInstrument(activeMembership!.band.id, newInstrumentName)
-      setNewInstrumentName('')
+      await createBandInstrument(activeMembership!.band.id, instrumentName)
       await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
+      onSuccess?.()
       setInstrumentMessage('Instrument toegevoegd.')
     } catch (submitError) {
       setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument toevoegen mislukt.')
@@ -330,6 +371,30 @@ export function BandSettingsPage() {
 
           {instrumentMessage ? <Alert tone="success">{instrumentMessage}</Alert> : null}
           {instrumentError ? <Alert tone="error">{instrumentError}</Alert> : null}
+          {membersQuery.error instanceof Error ? <Alert tone="error">{membersQuery.error.message}</Alert> : null}
+
+          {missingMemberInstruments.length ? (
+            <div className="members-list">
+              {missingMemberInstruments.map((instrumentName) => (
+                <div key={instrumentName} className="member-card member-card--enhanced">
+                  <div className="member-card__topline">
+                    <strong>{instrumentName}</strong>
+                    <Badge tone="warning">Nog niet in lijst</Badge>
+                  </div>
+                  <p className="muted-text">Gebruikt door leden, maar nog niet toegevoegd aan instrumentenlijst.</p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSavingInstrument}
+                    onClick={() => void handleAddMissingInstrument(instrumentName)}
+                    fullWidth
+                  >
+                    Toevoegen aan lijst
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <div className="members-list">
             {instrumentsQuery.data?.map((instrument) => (
@@ -394,4 +459,8 @@ export function BandSettingsPage() {
       ) : null}
     </PageCard>
   )
+}
+
+function normalizeInstrumentName(name: string) {
+  return name.trim().toLowerCase()
 }
