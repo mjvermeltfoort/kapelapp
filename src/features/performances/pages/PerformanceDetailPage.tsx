@@ -8,7 +8,7 @@ import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
-import { getPerformance, getPerformanceResponseOverview, type PerformanceOverviewPerson } from '../api/performances'
+import { getPerformance } from '../api/performances'
 import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 
 export function PerformanceDetailPage() {
@@ -18,6 +18,7 @@ export function PerformanceDetailPage() {
   const { activeMembership } = useBand()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
   const canManagePerformances = canManage(activeMembership?.role)
+  const canViewPlannerOverview = Boolean(activeMembership)
 
   const performanceQuery = useQuery({
     queryKey: ['performance', performanceId],
@@ -29,12 +30,6 @@ export function PerformanceDetailPage() {
     queryKey: ['my-performance-response', performanceId],
     queryFn: async () => getMyPerformanceResponse(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
-  })
-
-  const memberResponsesQuery = useQuery({
-    queryKey: ['performance-response-overview', performanceId],
-    queryFn: async () => getPerformanceResponseOverview(performanceId ?? ''),
-    enabled: Boolean(performanceId && activeMembership?.band.id && activeMembership.band.show_member_responses),
   })
 
   if (!activeMembership) {
@@ -69,121 +64,101 @@ export function PerformanceDetailPage() {
     <>
       <div className="page-grid">
         <PageCard title={performance.title} description={formatLongDate(performance.performance_date)}>
-        <div className="performance-hero">
-          <div className="performance-hero__status-row">
-            <Badge tone={mapStatusTone(performance.status)}>{formatStatusLabel(performance.status)}</Badge>
-            {performance.response_deadline ? (
-              <span className="performance-hero__deadline">
-                Reageren voor {new Date(performance.response_deadline).toLocaleDateString('nl-NL', {
-                  day: 'numeric',
-                  month: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            ) : null}
-          </div>
-
-          <div className="performance-meta-grid">
-            <div className="performance-meta-card">
-              <span className="performance-meta-card__label">Tijd</span>
-              <strong>
-                {performance.start_time.slice(0, 5)}
-                {performance.end_time ? ` - ${performance.end_time.slice(0, 5)}` : ''}
-              </strong>
+          <div className="performance-hero">
+            <div className="performance-hero__status-row">
+              <Badge tone={mapStatusTone(performance.status)}>{formatStatusLabel(performance.status)}</Badge>
+              {performance.response_deadline ? (
+                <span className="performance-hero__deadline">
+                  Reageren voor {new Date(performance.response_deadline).toLocaleDateString('nl-NL', {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              ) : null}
             </div>
 
-            {performance.gather_time ? (
+            <div className="performance-meta-grid">
               <div className="performance-meta-card">
-                <span className="performance-meta-card__label">Verzamelen</span>
-                <strong>{performance.gather_time.slice(0, 5)}</strong>
+                <span className="performance-meta-card__label">Tijd</span>
+                <strong>
+                  {performance.start_time.slice(0, 5)}
+                  {performance.end_time ? ` - ${performance.end_time.slice(0, 5)}` : ''}
+                </strong>
+              </div>
+
+              {performance.gather_time ? (
+                <div className="performance-meta-card">
+                  <span className="performance-meta-card__label">Verzamelen</span>
+                  <strong>{performance.gather_time.slice(0, 5)}</strong>
+                </div>
+              ) : null}
+
+              <div className="performance-meta-card performance-meta-card--wide">
+                <span className="performance-meta-card__label">Locatie</span>
+                <strong>{performance.location}</strong>
+              </div>
+            </div>
+
+            {performance.description?.trim() ? (
+              <div className="performance-description-card">
+                <span className="performance-meta-card__label">Meer informatie</span>
+                <p>{performance.description}</p>
               </div>
             ) : null}
 
-            <div className="performance-meta-card performance-meta-card--wide">
-              <span className="performance-meta-card__label">Locatie</span>
-              <strong>{performance.location}</strong>
-            </div>
-          </div>
+            <div className="performance-actions">
+              {performance.map_url ? (
+                <a href={performance.map_url} target="_blank" rel="noreferrer" className="home-create-button performance-link-button">
+                  Open kaart
+                </a>
+              ) : null}
 
-          {performance.description?.trim() ? (
-            <div className="performance-description-card">
-              <span className="performance-meta-card__label">Meer informatie</span>
-              <p>{performance.description}</p>
-            </div>
-          ) : null}
-
-          <div className="performance-actions">
-            {performance.map_url ? (
-              <a href={performance.map_url} target="_blank" rel="noreferrer" className="home-create-button performance-link-button">
-                Open kaart
-              </a>
-            ) : null}
-
-            {canManagePerformances ? (
-              <div className="performance-admin-links">
+              {canViewPlannerOverview ? (
                 <Link
                   to={`/performances/${performance.id}/planner-overview`}
                   className="home-create-button performance-link-button"
                 >
                   Planner-overzicht
                 </Link>
+              ) : null}
+
+              {canManagePerformances ? (
                 <Link to={`/performances/${performance.id}/edit`} className="performance-secondary-link">
                   Wijzigen
                 </Link>
-              </div>
-            ) : null}
-          </div>
-        </div>
-        </PageCard>
-
-        <PageCard
-        title="Jouw reactie"
-        description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht."
-      >
-        {responseQuery.isLoading ? <LoadingState>Reactie wordt geladen…</LoadingState> : null}
-        {responseQuery.error instanceof Error ? <Alert tone="error">{responseQuery.error.message}</Alert> : null}
-
-        <PerformanceResponseForm
-          currentResponse={responseQuery.data ?? null}
-          onSubmit={async (input) => {
-            await upsertMyPerformanceResponse({
-              performanceId: performance.id,
-              response: input.response,
-              reason: input.reason,
-            })
-            await Promise.all([
-              responseQuery.refetch(),
-              queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
-            ])
-            navigate('/performances', { replace: true })
-          }}
-        />
-        </PageCard>
-
-        {activeMembership.band.show_member_responses ? (
-        <PageCard title="Reacties van leden" description="Lijst van reacties die leden hebben gedeeld.">
-          {memberResponsesQuery.isLoading ? <LoadingState>Reacties worden geladen…</LoadingState> : null}
-          {memberResponsesQuery.error instanceof Error ? (
-            <Alert tone="error">{memberResponsesQuery.error.message}</Alert>
-          ) : null}
-
-          {memberResponsesQuery.data ? (
-            <div className="performance-response-groups">
-              <ResponseGroup title="Aanwezig" tone="yes" people={memberResponsesQuery.data.yes} />
-              <ResponseGroup title="Misschien" tone="maybe" people={memberResponsesQuery.data.maybe} />
-              <ResponseGroup title="Afwezig" tone="no" people={memberResponsesQuery.data.no} />
-              <ResponseGroup title="Nog niet" tone="none" people={memberResponsesQuery.data.no_response} />
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </PageCard>
-        ) : null}
+
+        <PageCard title="Jouw reactie" description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht.">
+          {responseQuery.isLoading ? <LoadingState>Reactie wordt geladen…</LoadingState> : null}
+          {responseQuery.error instanceof Error ? <Alert tone="error">{responseQuery.error.message}</Alert> : null}
+
+          <PerformanceResponseForm
+            currentResponse={responseQuery.data ?? null}
+            onSubmit={async (input) => {
+              await upsertMyPerformanceResponse({
+                performanceId: performance.id,
+                response: input.response,
+                reason: input.reason,
+              })
+              await Promise.all([
+                responseQuery.refetch(),
+                queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
+              ])
+              navigate('/performances', { replace: true })
+            }}
+          />
+        </PageCard>
       </div>
 
       <PlannerOverviewModal
         performanceId={performance.id}
         performance={performance}
-        canViewOverview={canManagePerformances}
+        canViewOverview={canViewPlannerOverview}
         isOpen={Boolean(plannerOverviewMatch)}
         onClose={() => void navigate(`/performances/${performance.id}`, { replace: true })}
       />
@@ -228,34 +203,4 @@ function mapStatusTone(status: 'draft' | 'published' | 'cancelled' | 'completed'
     case 'archived':
       return 'neutral' as const
   }
-}
-
-function ResponseGroup({
-  title,
-  tone,
-  people,
-}: {
-  title: string
-  tone: 'yes' | 'maybe' | 'no' | 'none'
-  people: PerformanceOverviewPerson[]
-}) {
-  if (!people.length) {
-    return null
-  }
-
-  return (
-    <section className={`performance-response-group performance-response-group--${tone}`}>
-      <div className="performance-response-group__header">
-        <strong>{title}</strong>
-        <span>{people.length}</span>
-      </div>
-      <div className="performance-response-group__names">
-        {people.map((person) => (
-          <span key={person.user_id} className="performance-response-group__name">
-            {person.display_name}
-          </span>
-        ))}
-      </div>
-    </section>
-  )
 }

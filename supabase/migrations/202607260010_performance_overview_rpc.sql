@@ -26,7 +26,7 @@ begin
     raise exception 'Performance not found';
   end if;
 
-  if not public.can_view_member_responses(v_band_id) then
+  if not public.is_band_member(v_band_id) then
     raise exception 'Insufficient permissions';
   end if;
 
