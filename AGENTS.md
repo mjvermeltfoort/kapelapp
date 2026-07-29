@@ -19,7 +19,7 @@
 - Adminfuncties zitten onder `/admin` met tabs:
   - `band`
   - `members`
-  - `invites`
+- Invitebeheer zit onder de admin-tab `band`.
 - Instrumentbeheer zit op profielpagina bij actieve kapel.
 - Optredens gebruiken compacte maandkalender.
 - PWA staat aan met auto-update service worker.
@@ -28,7 +28,7 @@
 - Login callback: `/auth/callback`
 - Profiel: `/profile`
 - Optredens: `/performances`
-- Admin: `/admin?tab=band|members|invites`
+- Admin: `/admin?tab=band|members`
 - GitHub Pages gebruikt SPA fallback via `404.html`.
 
 ## Ontwikkelcommando's
@@ -37,12 +37,15 @@
 - `npm run build`
 - `npm run test`
 
+## Runtime
+- Gebruik Node.js 26, vastgelegd in `.nvmrc` en `package.json`.
+
 ## Deploy
 - GitHub Pages via GitHub Actions workflow.
 - Build output komt uit `dist/`.
-- Vereiste Actions variabelen:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
+- Vereiste Actions-configuratie:
+  - variabele `VITE_SUPABASE_URL`
+  - secret `VITE_SUPABASE_ANON_KEY`
 
 ## Bij wijzigingen
 - Draai minimaal:

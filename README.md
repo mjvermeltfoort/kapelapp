@@ -24,6 +24,6 @@ Eenvoudige PWA voor kapellen en kleine muziekverenigingen.
 - `npm run test`
 
 ## Huidige status
-- migratie-backlog opgeslagen in `docs/migratie-backlog.md`
-- frontend shell, routing en auth-basis opgezet
-- eerste Supabase migraties toegevoegd in `supabase/migrations`
+- frontend, routing, auth, kapelbeheer, ledenbeheer, invites en optredens opgezet
+- 18 Supabase-migraties voor schema, RLS, RPC's en instrumentbeheer
+- actuele migratiestatus en open DB-testbacklog in `docs/migratie-backlog.md`
