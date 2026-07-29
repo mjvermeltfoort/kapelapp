@@ -90,4 +90,15 @@
   .page-card {
     padding: var(--space-4);
   }
+
+  .page-card__title-row {
+    align-items: flex-start;
+  }
+
+  .page-card__header h2 {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+  }
 }

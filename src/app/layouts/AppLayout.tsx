@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { clearInstallPrompt, getInstallPrompt } from '../../lib/installPrompt'
@@ -28,6 +28,8 @@ export function AppLayout() {
   const { profile } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const canManageBand = profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')
+  const brandMenuRef = useRef<HTMLDivElement>(null)
+  const brandTriggerRef = useRef<HTMLButtonElement>(null)
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isStandalone, setIsStandalone] = useState(false)
@@ -98,6 +100,35 @@ export function AppLayout() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!isBandMenuOpen) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && !brandMenuRef.current?.contains(event.target)) {
+        setIsBandMenuOpen(false)
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      setIsBandMenuOpen(false)
+      brandTriggerRef.current?.focus()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isBandMenuOpen])
+
   async function handleInstallClick() {
     if (!installPrompt) {
       return
@@ -143,8 +174,9 @@ export function AppLayout() {
       <div className="app-shell__top app-shell__top--header">
         <header className="app-header">
           <div className="header-left">
-            <div className="brand-menu">
+            <div ref={brandMenuRef} className="brand-menu">
               <button
+                ref={brandTriggerRef}
                 type="button"
                 className={isBandMenuOpen ? 'brand-trigger brand-trigger--open' : 'brand-trigger'}
                 onClick={() => setIsBandMenuOpen((current) => !current)}
