@@ -137,21 +137,23 @@ export function PerformanceDetailPage() {
           {responseQuery.isLoading ? <LoadingState>Reactie wordt geladen…</LoadingState> : null}
           {responseQuery.error instanceof Error ? <Alert tone="error">{responseQuery.error.message}</Alert> : null}
 
-          <PerformanceResponseForm
-            currentResponse={responseQuery.data ?? null}
-            onSubmit={async (input) => {
-              await upsertMyPerformanceResponse({
-                performanceId: performance.id,
-                response: input.response,
-                reason: input.reason,
-              })
-              await Promise.all([
-                responseQuery.refetch(),
-                queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
-              ])
-              navigate('/performances', { replace: true })
-            }}
-          />
+          {!responseQuery.isLoading && !responseQuery.error ? (
+            <PerformanceResponseForm
+              currentResponse={responseQuery.data ?? null}
+              onSubmit={async (input) => {
+                await upsertMyPerformanceResponse({
+                  performanceId: performance.id,
+                  response: input.response,
+                  reason: input.reason,
+                })
+                await Promise.all([
+                  responseQuery.refetch(),
+                  queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
+                ])
+                navigate('/performances', { replace: true })
+              }}
+            />
+          ) : null}
         </PageCard>
       </div>
 

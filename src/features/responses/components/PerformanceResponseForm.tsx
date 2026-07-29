@@ -19,14 +19,14 @@ export function PerformanceResponseForm({
   currentResponse,
   onSubmit,
 }: PerformanceResponseFormProps) {
-  const [response, setResponse] = useState<ResponseValue>(currentResponse?.response ?? 'yes')
+  const [response, setResponse] = useState<ResponseValue | null>(currentResponse?.response ?? null)
   const [reason, setReason] = useState(currentResponse?.reason ?? '')
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    setResponse(currentResponse?.response ?? 'yes')
+    setResponse(currentResponse?.response ?? null)
     setReason(currentResponse?.reason ?? '')
   }, [currentResponse?.reason, currentResponse?.response])
 
@@ -34,6 +34,11 @@ export function PerformanceResponseForm({
     event.preventDefault()
     setError(null)
     setMessage(null)
+
+    if (!response) {
+      setError('Kies eerst je reactie.')
+      return
+    }
 
     const trimmedReason = reason.trim()
 
@@ -59,6 +64,10 @@ export function PerformanceResponseForm({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)}>
+      {!currentResponse && !response ? (
+        <Alert>Je hebt nog geen reactie gegeven. Kies hieronder Ja, Misschien of Nee.</Alert>
+      ) : null}
+
       <fieldset className="response-selector">
         <legend>Jouw reactie</legend>
 
@@ -88,7 +97,7 @@ export function PerformanceResponseForm({
         </div>
       </fieldset>
 
-      {response !== 'yes' ? (
+      {response && response !== 'yes' ? (
         <FormField label={`Reden ${response === 'maybe' ? '(verplicht)' : '(optioneel)'}`}>
           <Textarea
             rows={3}
@@ -100,8 +109,8 @@ export function PerformanceResponseForm({
         </FormField>
       ) : null}
 
-      <Button type="submit" disabled={isSubmitting} fullWidth>
-        {isSubmitting ? 'Bezig met opslaan…' : 'Reactie opslaan'}
+      <Button type="submit" disabled={isSubmitting || !response} fullWidth>
+        {isSubmitting ? 'Bezig met opslaan…' : response ? 'Reactie opslaan' : 'Kies eerst een reactie'}
       </Button>
 
       {currentResponse ? (
