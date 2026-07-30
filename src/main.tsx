@@ -5,20 +5,18 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import { AppProviders } from './app/providers/AppProviders'
 import './index.css'
+import { waitForLatestAppVersion } from './lib/appUpdate'
 
-const updateSW = registerSW({
-  immediate: true,
-  onNeedRefresh() {
-    void updateSW(true).then(() => {
-      window.location.reload()
-    })
-  },
-})
+async function startApp() {
+  await waitForLatestAppVersion(registerSW)
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AppProviders>
-      <App />
-    </AppProviders>
-  </StrictMode>,
-)
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <AppProviders>
+        <App />
+      </AppProviders>
+    </StrictMode>,
+  )
+}
+
+void startApp()
