@@ -14,12 +14,9 @@ export function PageCard({ title, description, headerAction, backTo, children }:
   const navigate = useNavigate()
 
   function handleBack() {
-    if (window.history.length > 1) {
-      navigate(-1)
-      return
+    if (backTo) {
+      navigate(backTo, { replace: true })
     }
-
-    navigate(backTo ?? '/', { replace: true })
   }
 
   return (

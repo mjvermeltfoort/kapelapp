@@ -76,7 +76,7 @@ export function PerformanceEditPage() {
   }
 
   return (
-    <PageCard title="Optreden wijzigen" description={`Werk ${performance.title} bij.`} backTo={`/performances/${performance.id}`}>
+    <PageCard title="Optreden wijzigen" description={`Werk ${performance.title} bij.`} backTo="/performances">
       <PerformanceForm
         mode="edit"
         submitLabel="Wijzigingen opslaan"

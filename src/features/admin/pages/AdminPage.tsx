@@ -32,11 +32,6 @@ export function AdminPage() {
   }
 
   function handleBack() {
-    if (window.history.length > 1) {
-      navigate(-1)
-      return
-    }
-
     navigate('/performances', { replace: true })
   }
 
