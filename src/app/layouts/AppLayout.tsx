@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
-import { clearInstallPrompt, getInstallPrompt } from '../../lib/installPrompt'
+import { clearInstallPrompt, dismissIOSInstall, getInstallPrompt, hasIOSInstallBeenDismissed, isIOSSafari } from '../../lib/installPrompt'
 import { canManagePerformances as canManage } from '../../lib/roles'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
@@ -34,6 +34,7 @@ export function AppLayout() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isStandalone, setIsStandalone] = useState(false)
   const [showInstallHint, setShowInstallHint] = useState(false)
+  const [showIOSBanner, setShowIOSBanner] = useState(false)
 
   const navigation = useMemo(() => {
     const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'bands' | 'admin' | 'profile' }>
@@ -64,6 +65,8 @@ export function AppLayout() {
         setInstallPrompt(captured as BeforeInstallPromptEvent)
       } else if (isAndroidChrome()) {
         setShowInstallHint(true)
+      } else if (isIOSSafari() && !hasIOSInstallBeenDismissed()) {
+        setShowIOSBanner(true)
       }
     }
 
@@ -86,6 +89,7 @@ export function AppLayout() {
       setIsStandalone(isNowStandalone)
       if (isNowStandalone) {
         setShowInstallHint(false)
+        setShowIOSBanner(false)
       }
     }
 
@@ -129,6 +133,11 @@ export function AppLayout() {
     }
   }, [isBandMenuOpen])
 
+  function handleIOSDismiss() {
+    dismissIOSInstall()
+    setShowIOSBanner(false)
+  }
+
   async function handleInstallClick() {
     if (!installPrompt) {
       return
@@ -167,6 +176,23 @@ export function AppLayout() {
                 Installeer
               </button>
             ) : null}
+          </div>
+        </div>
+      ) : null}
+      {showIOSBanner ? (
+        <div className="app-shell__top">
+          <div className="install-banner" role="region" aria-label="App installeren op iOS">
+            <span className="install-banner__text">
+              Installeer: tik op <strong>⎙</strong> en kies <strong>Zet op beginscherm</strong>.
+            </span>
+            <button
+              type="button"
+              className="install-banner__button"
+              onClick={handleIOSDismiss}
+              aria-label="Banner sluiten"
+            >
+              ✕
+            </button>
           </div>
         </div>
       ) : null}
