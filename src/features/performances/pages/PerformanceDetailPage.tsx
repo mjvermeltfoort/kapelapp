@@ -5,17 +5,20 @@ import { Badge } from '../../../components/Badge'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { canManagePerformances as canManage } from '../../../lib/roles'
+import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
 import { getPerformance } from '../api/performances'
 import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
+import { PerformanceMessages } from '../components/PerformanceMessages'
 
 export function PerformanceDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { performanceId } = useParams()
   const { activeMembership } = useBand()
+  const { user } = useAuth()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
   const canManagePerformances = canManage(activeMembership?.role)
   const canViewPlannerOverview = Boolean(activeMembership)
@@ -155,6 +158,16 @@ export function PerformanceDetailPage() {
             />
           ) : null}
         </PageCard>
+
+        {user ? (
+          <PageCard title="Berichten">
+            <PerformanceMessages
+              performanceId={performance.id}
+              userId={user.id}
+              canModerate={canManagePerformances}
+            />
+          </PageCard>
+        ) : null}
       </div>
 
       <PlannerOverviewModal

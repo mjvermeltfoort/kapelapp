@@ -1,5 +1,6 @@
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { type PropsWithChildren } from 'react'
+import { sanitizeRedirectTarget } from '../../lib/redirect'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 
 export function RequireGuest({ children }: PropsWithChildren) {
@@ -11,7 +12,7 @@ export function RequireGuest({ children }: PropsWithChildren) {
   }
 
   if (user) {
-    const redirectTo = searchParams.get('redirectTo') || '/bands'
+    const redirectTo = sanitizeRedirectTarget(searchParams.get('redirectTo'), '/bands')
     return <Navigate to={redirectTo} replace />
   }
 

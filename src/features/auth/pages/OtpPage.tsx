@@ -4,13 +4,14 @@ import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { FormField, Input } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
+import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
 
 export function OtpPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const email = searchParams.get('email')
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  const redirectTo = sanitizeRedirectTarget(searchParams.get('redirectTo'), '/')
   const [token, setToken] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)

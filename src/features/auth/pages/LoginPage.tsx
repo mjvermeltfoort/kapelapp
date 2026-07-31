@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button'
 import { FormField, Input } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../hooks/useAuth'
+import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
 
 export function LoginPage() {
@@ -16,7 +17,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isOtpLoading, setIsOtpLoading] = useState(false)
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  const redirectTo = sanitizeRedirectTarget(searchParams.get('redirectTo'), '/')
 
   async function handleGoogleLogin() {
     if (!isConfigured) {
