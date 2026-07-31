@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
+import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
 
 export function AuthCallbackPage() {
@@ -9,7 +10,7 @@ export function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const redirectTo = searchParams.get('redirectTo') || '/'
+    const redirectTo = sanitizeRedirectTarget(searchParams.get('redirectTo'), '/')
 
     void supabase.auth.getSession().then(({ error: sessionError }) => {
       if (sessionError) {

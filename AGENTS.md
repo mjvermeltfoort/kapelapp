@@ -52,3 +52,4 @@
   - `npm run lint`
   - `npm run build`
 - Houd wijzigingen klein en taakgericht.
+- Wijzig nooit bestaande `supabase/migrations/*.sql`; voeg bij DB-wijzigingen altijd nieuwe migratie toe.
