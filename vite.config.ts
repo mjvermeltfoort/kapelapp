@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const appVersion = '0.0.1'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -48,6 +50,7 @@ export default defineConfig({
 
       },
       workbox: {
+        cacheId: `kapelapp-${appVersion}`,
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
