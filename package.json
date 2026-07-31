@@ -1,7 +1,7 @@
 {
   "name": "kapelapp",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "engines": {
     "node": ">=26 <27"
@@ -13,7 +13,11 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fetch:band": "node scripts/fetch-band-data.mjs",
+    "convert:band": "node scripts/convert-band-export.mjs",
+    "convert:band-bundle": "node scripts/convert-band-bundle.mjs",
+    "import:band": "node scripts/import-band-converted.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.8",
