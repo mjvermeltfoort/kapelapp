@@ -27,16 +27,6 @@ export async function listBandMembers(bandId: string): Promise<BandMemberRecord[
   return (data ?? []) as BandMemberRecord[]
 }
 
-export async function listAllMembers(): Promise<BandMemberRecord[]> {
-  const { data, error } = await supabase.rpc('get_all_members')
-
-  if (error) {
-    throw error
-  }
-
-  return (data ?? []) as BandMemberRecord[]
-}
-
 export async function setBandMemberRole(input: {
   bandId: string
   userId: string
