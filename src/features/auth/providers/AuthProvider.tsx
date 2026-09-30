@@ -62,12 +62,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     queryKey: profileKeys.mineWithEmail(userId, userEmail),
     queryFn: async () => ensureProfile({ id: userId!, email: userEmail }),
     enabled: Boolean(userId),
+    staleTime: 0,
   })
 
   const profile = userId ? (profileQuery.data ?? null) : null
+  // An incomplete cached profile is not proof that onboarding is still needed.
+  const needsProfileVerification = !profile?.display_name?.trim()
   const profileLoadFailed =
-    Boolean(userId) && !profileQuery.data && (profileQuery.isError || profileQuery.fetchStatus === 'paused')
-  const isLoading = !isSessionKnown || (Boolean(userId) && !profileQuery.data && !profileLoadFailed)
+    Boolean(userId) && needsProfileVerification && (profileQuery.isError || profileQuery.fetchStatus === 'paused')
+  const isLoading = !isSessionKnown || (
+    Boolean(userId) && needsProfileVerification && !profileLoadFailed
+    && (!profileQuery.isFetchedAfterMount || profileQuery.isFetching)
+  )
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -86,6 +92,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       saveProfile: async ({ displayName }) => {
         const nextProfile = await updateMyProfile({ displayName })
+        await queryClient.cancelQueries({ queryKey: profileKeys.mine(nextProfile.id) })
         queryClient.setQueriesData({ queryKey: profileKeys.mine(nextProfile.id) }, nextProfile)
         return nextProfile
       },
