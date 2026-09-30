@@ -58,9 +58,9 @@
   gap: var(--space-4);
   margin-top: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid rgb(255 255 255 / 0.7);
+  border: 1px solid color-mix(in srgb, var(--color-background-surface) 70%, transparent);
   border-radius: var(--radius-2xl);
-  background: rgb(255 255 255 / 0.88);
+  background: color-mix(in srgb, var(--color-background-surface) 88%, transparent);
   box-shadow: var(--shadow-sm);
 }
 
@@ -105,7 +105,7 @@
 
 .brand-text h1 {
   margin: 0;
-  color: var(--color-brand-500);
+  color: var(--color-text-brand);
   font-size: var(--font-size-xl);
   line-height: 1.1;
 }
@@ -242,9 +242,9 @@
   width: min(100%, var(--content-max-width));
   margin-inline: auto;
   padding: var(--space-2);
-  border: 1px solid rgb(255 255 255 / 0.72);
+  border: 1px solid color-mix(in srgb, var(--color-background-surface) 72%, transparent);
   border-radius: calc(var(--radius-2xl) + 0.25rem);
-  background: rgb(255 255 255 / 0.92);
+  background: color-mix(in srgb, var(--color-background-surface) 92%, transparent);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
   pointer-events: auto;
@@ -273,7 +273,7 @@
 .nav-link.active {
   border-color: var(--color-brand-100);
   background: var(--color-brand-50);
-  color: var(--color-brand-600);
+  color: var(--color-text-brand);
 }
 
 .nav-link__label {

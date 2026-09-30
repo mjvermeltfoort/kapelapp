@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert } from '../../../components/Alert'
+import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { FormField, Textarea } from '../../../components/FormField'
 import { LoadingState } from '../../../components/LoadingState'
@@ -10,7 +11,10 @@ import {
   listPerformanceMessages,
 } from '../api/messages'
 import { getErrorMessage } from '../../../lib/errors'
+import { readMessagesSeenAt, storeMessagesSeenAt } from '../messageReadStorage'
 import { performanceKeys } from '../queryKeys'
+
+const MESSAGES_REFRESH_INTERVAL_MS = 30_000
 
 type PerformanceMessagesProps = {
   performanceId: string
@@ -24,11 +28,26 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
+  const [seenAt] = useState(() => readMessagesSeenAt(performanceId))
 
   const messagesQuery = useQuery({
     queryKey: performanceKeys.messages(performanceId),
     queryFn: async () => listPerformanceMessages(performanceId),
+    refetchInterval: MESSAGES_REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
   })
+
+  const messages = messagesQuery.data
+  const latestMessageAt = messages?.at(-1)?.created_at
+  const isUnread = (message: { user_id: string; created_at: string }) =>
+    message.user_id !== userId && (!seenAt || message.created_at > seenAt)
+  const unreadCount = messages?.filter(isUnread).length ?? 0
+
+  useEffect(() => {
+    if (latestMessageAt) {
+      storeMessagesSeenAt(performanceId, latestMessageAt)
+    }
+  }, [performanceId, latestMessageAt])
 
   async function refreshMessages() {
     await queryClient.invalidateQueries({ queryKey: performanceKeys.messages(performanceId) })
@@ -73,6 +92,11 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
     <section className="performance-messages" aria-label="Berichten">
       <div className="performance-messages__header">
         <p className="muted-text">Deel iets met je kapelgenoten.</p>
+        {unreadCount ? (
+          <Badge tone="brand" className="performance-messages__unread" role="status">
+            {unreadCount === 1 ? '1 nieuw bericht' : `${unreadCount} nieuwe berichten`}
+          </Badge>
+        ) : null}
       </div>
 
       {messagesQuery.isLoading ? <LoadingState>Berichten worden geladen…</LoadingState> : null}
@@ -85,7 +109,10 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
               const canDelete = message.user_id === userId || canModerate
 
               return (
-                <li key={message.id} className="performance-message">
+                <li
+                  key={message.id}
+                  className={isUnread(message) ? 'performance-message performance-message--unread' : 'performance-message'}
+                >
                   <div className="performance-message__meta">
                     <strong>{message.author_name}</strong>
                     <time dateTime={message.created_at}>{formatMessageDate(message.created_at)}</time>

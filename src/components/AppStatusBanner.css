@@ -14,7 +14,7 @@
 }
 
 .app-status-banner--offline {
-  background: var(--color-warning-700);
+  background: var(--color-warning-fill);
 }
 
 .app-status-banner__button {
