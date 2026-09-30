@@ -22,7 +22,7 @@
 - Invitebeheer zit onder de admin-tab `band`.
 - Instrumentbeheer zit op profielpagina bij actieve kapel.
 - Optredens tonen tabs Komend/Afgelopen; onbeantwoorde optredens eerst, met snel Ja/Nee reageren.
-- Nieuw optreden via zwevende knop boven hoofdmenu.
+- Nieuw optreden via plusknop rechts in de header naast de kapelnaam, alleen voor planner/admin/owner.
 - Rollen tonen in het Nederlands via `formatRoleLabel` (Lid, Planner, Beheerder, Eigenaar).
 - Foutmeldingen via `getErrorMessage`; toon nooit ruwe `error.message`.
 - Donkere modus via `prefers-color-scheme` op CSS-variabelen; gebruik variabelen i.p.v. vaste kleuren.

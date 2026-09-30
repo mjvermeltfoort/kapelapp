@@ -4,7 +4,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
-import { Icon } from '../../../components/Icon'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { TabLink, Tabs } from '../../../components/Tabs'
@@ -169,11 +168,6 @@ export function PerformancesPage() {
         ) : null}
       </PageCard>
 
-      {canManagePerformances ? (
-        <Link to="/performances/new" className="fab" aria-label="Optreden toevoegen" title="Optreden toevoegen">
-          <Icon name="add" className="nav-icon" />
-        </Link>
-      ) : null}
     </div>
   )
 }

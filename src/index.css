@@ -775,26 +775,6 @@ input[type='radio'] {
   color: var(--color-warning-700);
 }
 
-.fab {
-  position: fixed;
-  right: max(var(--space-4), calc((100vw - var(--content-max-width)) / 2));
-  bottom: calc(5.5rem + env(safe-area-inset-bottom));
-  z-index: 25;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
-  color: var(--color-text-on-brand);
-  box-shadow: var(--shadow-lg);
-}
-
-.fab:hover {
-  color: var(--color-text-on-brand);
-}
-
 .empty-state-block {
   display: grid;
   gap: var(--space-3);
@@ -1632,7 +1612,6 @@ input[type='radio'] {
 .nav-link:focus-visible,
 .performance-secondary-link:focus-visible,
 .home-create-button:focus-visible,
-.fab:focus-visible,
 .quick-reply:focus-visible,
 .home-performance-card__link:focus-visible,
 .brand-panel__item:focus-visible,

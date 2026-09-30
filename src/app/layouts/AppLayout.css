@@ -68,12 +68,36 @@
   min-width: 0;
 }
 
+.header-create-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: var(--color-text-on-brand);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-create-button:hover {
+  color: var(--color-text-on-brand);
+}
+
+.header-create-button:focus-visible {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
 .brand-menu {
   position: relative;
 }
 
 .brand-trigger {
   display: flex;
+  max-width: 100%;
   align-items: center;
   gap: var(--space-3);
   min-height: auto;
