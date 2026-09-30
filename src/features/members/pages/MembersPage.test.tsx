@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MembersPage } from './MembersPage'
 
@@ -62,12 +63,14 @@ describe('MembersPage', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <MembersPage />
+        <MemoryRouter>
+          <MembersPage />
+        </MemoryRouter>
       </QueryClientProvider>,
     )
 
     await waitFor(() => expect(listBandMembers).toHaveBeenCalledWith('active-band'))
     expect(screen.getByText('Kapel: Actieve kapel')).toBeInTheDocument()
-    expect(screen.getByText('Lid')).toBeInTheDocument()
+    expect(await screen.findByText('lid@example.com')).toBeInTheDocument()
   })
 })
