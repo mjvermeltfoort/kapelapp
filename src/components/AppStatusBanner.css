@@ -1,0 +1,28 @@
+.app-status-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4) var(--space-2);
+  background: var(--color-brand-600);
+  color: var(--color-text-on-brand);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.app-status-banner--offline {
+  background: var(--color-warning-fill);
+}
+
+.app-status-banner__button {
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-0);
+  color: var(--color-brand-700);
+  font-weight: var(--font-weight-semibold);
+}

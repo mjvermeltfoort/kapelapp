@@ -48,8 +48,8 @@ index.html -> src/main.tsx -> AppProviders/router -> feature page/hook
 
 ## 5) Known Architectural Risks
 
-- Browser API types are handwritten casts rather than generated database types; schema drift can compile successfully.
-- Pages often display raw Supabase/PostgreSQL error messages; database details can reach users.
+- Browser API modules use generated database types (`src/lib/supabase/database.types.ts`); only `jsonb` RPC results use handwritten types.
+- Pages show errors through `getErrorMessage` (`src/lib/errors.ts`), which maps known backend errors to Dutch and only logs details.
 - UI role checks hide or redirect actions, but are duplicated in several pages; SQL remains authoritative.
 - `PlannerOverviewModal.tsx` exceeds 500 lines and mixes data querying, focus handling, modal behavior and presentation.
 

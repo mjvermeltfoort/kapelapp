@@ -3,6 +3,7 @@ import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { FormField, Textarea } from '../../../components/FormField'
 import type { PerformanceResponse, ResponseValue } from '../api/responses'
+import { getErrorMessage } from '../../../lib/errors'
 
 type PerformanceResponseFormProps = {
   currentResponse: PerformanceResponse | null
@@ -56,7 +57,7 @@ export function PerformanceResponseForm({
         setReason('')
       }
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSubmitting(false)
     }

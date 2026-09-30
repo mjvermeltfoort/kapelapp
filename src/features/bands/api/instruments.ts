@@ -1,15 +1,7 @@
 import { supabase } from '../../../lib/supabase/client'
+import type { Tables } from '../../../lib/supabase/database.types'
 
-export type BandInstrument = {
-  id: string
-  band_id: string
-  name: string
-  normalized_name: string
-  sort_order: number
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+export type BandInstrument = Tables<'band_instruments'>
 
 export async function listBandInstruments(bandId: string, includeInactive = false): Promise<BandInstrument[]> {
   const { data, error } = await supabase.rpc('get_band_instruments', {
@@ -21,7 +13,7 @@ export async function listBandInstruments(bandId: string, includeInactive = fals
     throw error
   }
 
-  return (data ?? []) as BandInstrument[]
+  return data ?? []
 }
 
 export async function createBandInstrument(bandId: string, name: string): Promise<BandInstrument> {
@@ -34,7 +26,7 @@ export async function createBandInstrument(bandId: string, name: string): Promis
     throw error
   }
 
-  return data as BandInstrument
+  return data
 }
 
 export async function updateBandInstrument(instrumentId: string, name: string): Promise<BandInstrument> {
@@ -47,7 +39,7 @@ export async function updateBandInstrument(instrumentId: string, name: string): 
     throw error
   }
 
-  return data as BandInstrument
+  return data
 }
 
 export async function deactivateBandInstrument(instrumentId: string): Promise<BandInstrument> {
@@ -59,5 +51,5 @@ export async function deactivateBandInstrument(instrumentId: string): Promise<Ba
     throw error
   }
 
-  return data as BandInstrument
+  return data
 }

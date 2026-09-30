@@ -1,50 +1,18 @@
 import { supabase } from '../../../lib/supabase/client'
+import type { Tables } from '../../../lib/supabase/database.types'
+import { type BandRole, toBandRole } from '../../../lib/supabase/types'
 
-export type Band = {
-  id: string
-  name: string
-  description: string | null
-  show_member_responses: boolean
-  is_archived: boolean
-  created_by: string
-  created_at: string
-  updated_at: string
-}
+export type Band = Pick<
+  Tables<'bands'>,
+  'id' | 'name' | 'description' | 'show_member_responses' | 'is_archived' | 'created_by' | 'created_at' | 'updated_at'
+>
 
-export type BandMembership = {
-  id: string
-  band_id: string
-  user_id: string
-  role: 'member' | 'planner' | 'admin' | 'owner'
-  instrument: string | null
-  is_active: boolean
-  joined_at: string
-  left_at: string | null
+export type BandMembership = Omit<
+  Pick<Tables<'band_members'>, 'id' | 'band_id' | 'user_id' | 'role' | 'instrument' | 'is_active' | 'joined_at' | 'left_at'>,
+  'role'
+> & {
+  role: BandRole
   band: Band
-}
-
-function mapMembership(row: {
-  id: string
-  band_id: string
-  user_id: string
-  role: BandMembership['role']
-  instrument: string | null
-  is_active: boolean
-  joined_at: string
-  left_at: string | null
-  band: Band
-}): BandMembership {
-  return {
-    id: row.id,
-    band_id: row.band_id,
-    user_id: row.user_id,
-    role: row.role,
-    instrument: row.instrument,
-    is_active: row.is_active,
-    joined_at: row.joined_at,
-    left_at: row.left_at,
-    band: row.band,
-  }
 }
 
 export async function listMyBandMemberships(): Promise<BandMembership[]> {
@@ -93,13 +61,7 @@ export async function listMyBandMemberships(): Promise<BandMembership[]> {
     throw error
   }
 
-  return (data ?? []).map((row) => {
-    const rawBand = row.band as Band | Band[]
-    return mapMembership({
-      ...row,
-      band: Array.isArray(rawBand) ? rawBand[0] : rawBand,
-    })
-  })
+  return (data ?? []).map((row) => ({ ...row, role: toBandRole(row.role) }))
 }
 
 export async function createBand(input: {
@@ -108,14 +70,14 @@ export async function createBand(input: {
 }): Promise<string> {
   const { data, error } = await supabase.rpc('create_band', {
     p_name: input.name.trim(),
-    p_description: input.description.trim() || null,
+    p_description: input.description.trim() || undefined,
   })
 
   if (error) {
     throw error
   }
 
-  return data as string
+  return data
 }
 
 export async function updateBand(input: {
@@ -147,8 +109,8 @@ export async function updateBand(input: {
 export async function updateMyInstrument(input: {
   bandId: string
   instrument: string
-}): Promise<BandMembership> {
-  const { data, error } = await supabase.rpc('update_my_membership_instrument', {
+}): Promise<void> {
+  const { error } = await supabase.rpc('update_my_membership_instrument', {
     p_band_id: input.bandId,
     p_instrument: input.instrument,
   })
@@ -156,8 +118,6 @@ export async function updateMyInstrument(input: {
   if (error) {
     throw error
   }
-
-  return data as BandMembership
 }
 
 export async function leaveBand(input: { bandId: string }): Promise<void> {

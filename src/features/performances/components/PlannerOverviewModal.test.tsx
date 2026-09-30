@@ -79,7 +79,7 @@ describe('PlannerOverviewModal', () => {
   it('shows permission error when overview not allowed', () => {
     renderModal(false)
 
-    expect(screen.getByText('Alleen planners, admins en owners hebben toegang.')).toBeInTheDocument()
+    expect(screen.getByText('Alleen planners, beheerders en eigenaren hebben toegang.')).toBeInTheDocument()
   })
 
   it('loads overview and copies reminder only when no responders pending', async () => {

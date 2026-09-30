@@ -3,6 +3,7 @@ import { Alert } from '../../../components/Alert'
 import { Button } from '../../../components/Button'
 import { FormField, Input, Select, Textarea } from '../../../components/FormField'
 import type { PerformanceInput, PerformanceStatus } from '../api/performances'
+import { getErrorMessage } from '../../../lib/errors'
 
 type PerformanceFormValues = Omit<PerformanceInput, 'bandId'>
 
@@ -32,7 +33,7 @@ export function PerformanceForm({ mode, submitLabel, initialValues, onSubmit }: 
         status,
       })
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSubmitting(false)
       setSubmitAction('default')

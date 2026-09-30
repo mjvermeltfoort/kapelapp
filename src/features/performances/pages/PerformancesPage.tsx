@@ -1,29 +1,43 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
-import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { EmptyState } from '../../../components/EmptyState'
 import { Icon } from '../../../components/Icon'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
+import { TabLink, Tabs } from '../../../components/Tabs'
+import { todayKey } from '../../../lib/dates'
+import { getErrorMessage } from '../../../lib/errors'
 import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
-import { listMyPerformanceResponses } from '../../responses/api/responses'
-import { listBandPerformances } from '../api/performances'
+import { listMyPerformanceResponses, upsertMyPerformanceResponse } from '../../responses/api/responses'
+import { responseKeys } from '../../responses/queryKeys'
+import { listBandPerformances, type Performance } from '../api/performances'
+import { PerformanceListCard } from '../components/PerformanceListCard'
+import { performanceKeys } from '../queryKeys'
+
+const PAGE_SIZE = 5
 
 export function PerformancesPage() {
+  const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
+  const view = searchParams.get('view') === 'past' ? 'past' : 'upcoming'
   const { profile } = useAuth()
   const { activeMembership } = useBand()
+  const bandId = activeMembership?.band.id
   const canManagePerformances = canManage(activeMembership?.role)
-  const [visibleCount, setVisibleCount] = useState(3)
+  const [paging, setPaging] = useState({ view, count: PAGE_SIZE })
+  const visibleCount = paging.view === view ? paging.count : PAGE_SIZE
+  const [replyingId, setReplyingId] = useState<string | null>(null)
+  const [replyError, setReplyError] = useState<string | null>(null)
 
   const performancesQuery = useQuery({
-    queryKey: ['performances', activeMembership?.band.id],
-    queryFn: async () => listBandPerformances(activeMembership!.band.id),
-    enabled: Boolean(activeMembership?.band.id),
+    queryKey: performanceKeys.list(bandId),
+    queryFn: async () => listBandPerformances(bandId!),
+    enabled: Boolean(bandId),
   })
 
   const performanceIds = useMemo(
@@ -32,30 +46,65 @@ export function PerformancesPage() {
   )
 
   const responsesQuery = useQuery({
-    queryKey: ['my-performance-responses', activeMembership?.band.id, performanceIds.join(',')],
+    queryKey: responseKeys.mineForPerformances(bandId, performanceIds),
     queryFn: async () => listMyPerformanceResponses(performanceIds),
-    enabled: Boolean(activeMembership?.band.id && performanceIds.length),
+    enabled: Boolean(bandId && performanceIds.length),
   })
 
-  const upcomingPerformances = useMemo(() => {
-    const today = new Date()
-    const todayKey = [
-      today.getFullYear(),
-      `${today.getMonth() + 1}`.padStart(2, '0'),
-      `${today.getDate()}`.padStart(2, '0'),
-    ].join('-')
+  const responsesByPerformance = useMemo(
+    () => new Map((responsesQuery.data ?? []).map((response) => [response.performance_id, response])),
+    [responsesQuery.data],
+  )
 
-    return (performancesQuery.data ?? []).filter((performance) => performance.performance_date >= todayKey)
-  }, [performancesQuery.data])
+  const visiblePerformances = useMemo(() => {
+    const today = todayKey()
+    const performances = performancesQuery.data ?? []
 
-  const featuredPerformances = upcomingPerformances.slice(0, visibleCount)
-  const hasMorePerformances = upcomingPerformances.length > featuredPerformances.length
+    if (view === 'past') {
+      return performances.filter((performance) => performance.performance_date < today).reverse()
+    }
+
+    const upcoming = performances.filter((performance) => performance.performance_date >= today)
+    const needsResponse = (performance: Performance) =>
+      isRespondable(performance) && !responsesByPerformance.has(performance.id)
+
+    return [...upcoming.filter(needsResponse), ...upcoming.filter((performance) => !needsResponse(performance))]
+  }, [performancesQuery.data, responsesByPerformance, view])
+
+  const shownPerformances = visiblePerformances.slice(0, visibleCount)
+  const hasMorePerformances = visiblePerformances.length > shownPerformances.length
   const firstName = profile?.display_name?.trim().split(/\s+/)[0] ?? 'daar'
+
+  async function handleQuickReply(performanceId: string, response: 'yes' | 'no') {
+    setReplyingId(performanceId)
+    setReplyError(null)
+
+    try {
+      await upsertMyPerformanceResponse({ performanceId, response, reason: '' })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: responseKeys.mineForBand(bandId) }),
+        queryClient.invalidateQueries({ queryKey: responseKeys.mine(performanceId) }),
+        queryClient.invalidateQueries({ queryKey: performanceKeys.overview(performanceId) }),
+      ])
+    } catch (error) {
+      setReplyError(getErrorMessage(error, 'Reactie opslaan mislukt.'))
+    } finally {
+      setReplyingId(null)
+    }
+  }
 
   if (!activeMembership) {
     return (
-      <PageCard title="Optredens" description="Kies eerst een actieve kapel.">
-        <p>Ga eerst naar kapellenkiezer en selecteer een kapel.</p>
+      <PageCard title="Optredens" description="Je hebt nog geen actieve kapel.">
+        <EmptyState
+          action={
+            <Link to="/bands" className="performance-secondary-link">
+              Naar mijn kapellen
+            </Link>
+          }
+        >
+          Kies een kapel of open de uitnodigingslink die je van je kapel hebt gekregen.
+        </EmptyState>
       </PageCard>
     )
   }
@@ -64,125 +113,71 @@ export function PerformancesPage() {
     <div className="page-grid">
       <PageCard
         title={`Welkom terug, ${firstName}!`}
-        description="Hieronder je aankomende optredens."
+        description={view === 'past' ? 'Eerdere optredens van je kapel.' : 'Hieronder je aankomende optredens.'}
       >
+        <Tabs aria-label="Optredens filteren">
+          <TabLink to="/performances" isActive={view === 'upcoming'} replace>
+            Komend
+          </TabLink>
+          <TabLink to="/performances?view=past" isActive={view === 'past'} replace>
+            Afgelopen
+          </TabLink>
+        </Tabs>
+
         {performancesQuery.isLoading ? <LoadingState>Optredens worden geladen…</LoadingState> : null}
-        {responsesQuery.isLoading && performancesQuery.data?.length ? (
-          <LoadingState>Jouw reacties worden bijgewerkt…</LoadingState>
-        ) : null}
-        {performancesQuery.error instanceof Error ? (
-          <Alert tone="error">{performancesQuery.error.message}</Alert>
-        ) : null}
-        {responsesQuery.error instanceof Error ? (
-          <Alert tone="error">{responsesQuery.error.message}</Alert>
-        ) : null}
+        {performancesQuery.error ? <Alert tone="error">{getErrorMessage(performancesQuery.error)}</Alert> : null}
+        {responsesQuery.error ? <Alert tone="error">{getErrorMessage(responsesQuery.error)}</Alert> : null}
+        {replyError ? <Alert tone="error">{replyError}</Alert> : null}
 
-        {!performancesQuery.isLoading && !performancesQuery.data?.length ? (
-          <EmptyState>Nog geen optredens voor deze kapel.</EmptyState>
-        ) : null}
-
-        {featuredPerformances.length ? (
-          <div className="home-performance-list">
-            {featuredPerformances.map((performance) => {
-              const response = responsesQuery.data?.find((item) => item.performance_id === performance.id)
-
-              return (
-                <Link
-                  key={performance.id}
-                  to={`/performances/${performance.id}`}
-                  className="home-performance-card"
-                >
-                  <div className="home-performance-card__date">
-                    <span>{formatShortWeekday(performance.performance_date)}</span>
-                    <strong>{new Date(performance.performance_date).getDate()}</strong>
-                    <span>{formatShortMonth(performance.performance_date)}</span>
-                  </div>
-
-                  <div className="home-performance-card__content">
-                    <div className="home-performance-card__topline">
-                      <strong>{performance.title}</strong>
-                      <Badge tone={mapResponseTone(response?.response)}>
-                        {formatResponseLabel(response?.response)}
-                      </Badge>
-                    </div>
-
-                    <div className="home-performance-card__meta">
-                      <span>
-                        {performance.start_time.slice(0, 5)}
-                        {performance.end_time ? ` - ${performance.end_time.slice(0, 5)}` : ''}
-                      </span>
-                      <span>{performance.location}</span>
-                    </div>
-
-                    {performance.response_deadline ? (
-                      <span className="home-performance-card__deadline">
-                        Reageren voor {formatDeadlineLabel(performance.response_deadline)}
-                      </span>
-                    ) : null}
-                  </div>
+        {!performancesQuery.isLoading && !performancesQuery.error && !visiblePerformances.length ? (
+          <EmptyState
+            action={
+              view === 'upcoming' && canManagePerformances ? (
+                <Link to="/performances/new" className="performance-secondary-link">
+                  Eerste optreden toevoegen
                 </Link>
-              )
-            })}
+              ) : view === 'upcoming' ? (
+                <Link to="/performances?view=past" className="performance-secondary-link" replace>
+                  Bekijk afgelopen optredens
+                </Link>
+              ) : undefined
+            }
+          >
+            {view === 'past' ? 'Nog geen afgelopen optredens.' : 'Geen aankomende optredens voor deze kapel.'}
+          </EmptyState>
+        ) : null}
+
+        {shownPerformances.length ? (
+          <div className="home-performance-list">
+            {shownPerformances.map((performance) => (
+              <PerformanceListCard
+                key={performance.id}
+                performance={performance}
+                response={responsesByPerformance.get(performance.id)}
+                canQuickReply={view === 'upcoming' && isRespondable(performance) && !responsesQuery.isLoading}
+                isReplying={replyingId === performance.id}
+                onQuickReply={(response) => void handleQuickReply(performance.id, response)}
+              />
+            ))}
           </div>
         ) : null}
 
         {hasMorePerformances ? (
-          <Button type="button" variant="secondary" onClick={() => setVisibleCount((current) => current + 3)} fullWidth>
+          <Button type="button" variant="secondary" onClick={() => setPaging({ view, count: visibleCount + PAGE_SIZE })} fullWidth>
             Meer tonen
           </Button>
         ) : null}
-
-        {canManagePerformances ? (
-          <Link to="/performances/new" className="home-create-button">
-            <Icon name="add" className="nav-icon" />
-            <span>Optreden toevoegen</span>
-          </Link>
-        ) : null}
       </PageCard>
+
+      {canManagePerformances ? (
+        <Link to="/performances/new" className="fab" aria-label="Optreden toevoegen" title="Optreden toevoegen">
+          <Icon name="add" className="nav-icon" />
+        </Link>
+      ) : null}
     </div>
   )
 }
 
-function formatShortWeekday(date: string) {
-  return new Date(date).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '').toUpperCase()
+function isRespondable(performance: Performance) {
+  return performance.status === 'published'
 }
-
-function formatShortMonth(date: string) {
-  return new Date(date).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '').toUpperCase()
-}
-
-function formatDeadlineLabel(dateTime: string) {
-  const date = new Date(dateTime)
-
-  return date.toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'long',
-  })
-}
-
-function formatResponseLabel(response?: 'yes' | 'maybe' | 'no') {
-  switch (response) {
-    case 'yes':
-      return 'Ja'
-    case 'maybe':
-      return 'Misschien'
-    case 'no':
-      return 'Nee'
-    default:
-      return 'Nog niet gereageerd'
-  }
-}
-
-function mapResponseTone(response?: 'yes' | 'maybe' | 'no') {
-  switch (response) {
-    case 'yes':
-      return 'success' as const
-    case 'maybe':
-      return 'warning' as const
-    case 'no':
-      return 'danger' as const
-    default:
-      return 'neutral' as const
-  }
-}
-

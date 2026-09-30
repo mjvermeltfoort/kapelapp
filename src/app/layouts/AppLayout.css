@@ -48,7 +48,7 @@
 }
 
 .install-banner__button:hover {
-  background: var(--color-brand-50);
+  background: rgb(255 255 255 / 0.88);
 }
 
 .app-header {
@@ -58,9 +58,9 @@
   gap: var(--space-4);
   margin-top: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid rgb(255 255 255 / 0.7);
+  border: 1px solid color-mix(in srgb, var(--color-background-surface) 70%, transparent);
   border-radius: var(--radius-2xl);
-  background: rgb(255 255 255 / 0.88);
+  background: color-mix(in srgb, var(--color-background-surface) 88%, transparent);
   box-shadow: var(--shadow-sm);
 }
 
@@ -105,7 +105,7 @@
 
 .brand-text h1 {
   margin: 0;
-  color: var(--color-brand-500);
+  color: var(--color-text-brand);
   font-size: var(--font-size-xl);
   line-height: 1.1;
 }
@@ -170,44 +170,6 @@
   font-size: var(--font-size-sm);
 }
 
-.user-block {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.nav-icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--touch-target-min);
-  height: var(--touch-target-min);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-pill);
-  background: var(--color-background-surface);
-  color: var(--color-text-primary);
-  text-decoration: none;
-  box-shadow: var(--shadow-xs);
-}
-
-.nav-icon-link:hover {
-  background: var(--color-brand-50);
-  border-color: var(--color-brand-100);
-}
-
-.nav-icon-link--primary {
-  border-color: var(--color-brand-500);
-  background: var(--color-brand-500);
-  color: var(--color-text-on-brand);
-}
-
-.nav-icon-link--primary:hover {
-  border-color: var(--color-brand-600);
-  background: var(--color-brand-600);
-  color: var(--color-text-on-brand);
-}
-
 .nav-icon {
   width: var(--icon-size-md);
   height: var(--icon-size-md);
@@ -242,9 +204,9 @@
   width: min(100%, var(--content-max-width));
   margin-inline: auto;
   padding: var(--space-2);
-  border: 1px solid rgb(255 255 255 / 0.72);
+  border: 1px solid color-mix(in srgb, var(--color-background-surface) 72%, transparent);
   border-radius: calc(var(--radius-2xl) + 0.25rem);
-  background: rgb(255 255 255 / 0.92);
+  background: color-mix(in srgb, var(--color-background-surface) 92%, transparent);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
   pointer-events: auto;
@@ -273,7 +235,7 @@
 .nav-link.active {
   border-color: var(--color-brand-100);
   background: var(--color-brand-50);
-  color: var(--color-brand-600);
+  color: var(--color-text-brand);
 }
 
 .nav-link__label {
@@ -308,10 +270,6 @@
     right: 0;
     left: 0;
     min-width: 0;
-  }
-
-  .user-block {
-    flex-shrink: 0;
   }
 
   .nav-link {
@@ -380,7 +338,6 @@
 }
 
 .brand-trigger,
-.nav-icon-link,
 .app-header,
 .install-banner,
 .app-nav {
@@ -393,7 +350,6 @@
     opacity var(--duration-base) var(--ease-standard);
 }
 
-.nav-icon-link:hover,
 .brand-trigger:hover {
   transform: translateY(-1px);
 }
@@ -406,15 +362,19 @@
   }
 
   .brand-trigger,
-  .nav-icon-link,
   .app-header,
   .install-banner,
   .app-nav {
     transition: none;
   }
 
-  .nav-icon-link:hover,
   .brand-trigger:hover {
     transform: none;
   }
+}
+
+.install-banner__icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
 }

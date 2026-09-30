@@ -1,4 +1,4 @@
-type IconName = 'performances' | 'admin' | 'profile' | 'add' | 'bands' | 'back'
+type IconName = 'performances' | 'admin' | 'profile' | 'add' | 'bands' | 'back' | 'share'
 
 type IconProps = {
   name: IconName
@@ -54,6 +54,15 @@ export function Icon({ name, className }: IconProps) {
         <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
           <path
             d="M15.25 5.25a1 1 0 0 1 0 1.41L10.41 11.5h8.34a1 1 0 1 1 0 2h-8.34l4.84 4.84a1 1 0 1 1-1.41 1.41l-6.55-6.55a1 1 0 0 1 0-1.41l6.55-6.55a1 1 0 0 1 1.41 0Z"
+            fill="currentColor"
+          />
+        </svg>
+      )
+      case 'share':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+          <path
+            d="M12 2.5 7.8 6.7l1.4 1.4L11 6.3V15h2V6.3l1.8 1.8 1.4-1.4L12 2.5ZM5 10v10.5h14V10h-4v2h2v6.5H7V12h2v-2H5Z"
             fill="currentColor"
           />
         </svg>

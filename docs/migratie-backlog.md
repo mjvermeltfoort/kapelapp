@@ -34,19 +34,28 @@ Dit document beschrijft huidige PostgreSQL/Supabase-migratiestatus. Toegepaste m
 | `202607270001_single_current_band_invite.sql` | gereed | Beperkt beheer tot één actuele invite per kapel en ondersteunt regeneratie. |
 | `202607270002_band_instruments.sql` | gereed | Voegt instrumentcatalogus, RLS en beheer-RPC's per kapel toe. |
 | `202607280001_performance_overview_member_access.sql` | gereed | Maakt planner-overzicht beschikbaar voor actieve kapelleden. |
+| `202607310001_performance_overview_access.sql` | gereed | Beperkt planner-overzicht tot rollen die reacties mogen zien. |
+| `202607310002_performance_overview_membership_access.sql` | gereed | Staat planner-overzicht weer toe voor alle actieve kapelleden. |
+| `202607310003_performance_messages.sql` | gereed | Voegt berichten per optreden toe met RLS en auteurtrigger. |
+| `202609300001_restrict_profile_columns.sql` | gereed | Beperkt schrijfrechten op `profiles` tot `email` en `display_name`, zodat gebruikers zichzelf geen superadmin kunnen maken. |
+
+## Actuele functiedefinities
+
+Sommige functies zijn in meerdere migraties opnieuw gedefinieerd. De laatste definitie is leidend; pas bij een wijziging deze tabel aan.
+
+| Functie | Actuele definitie |
+|---------|-------------------|
+| `get_performance_response_overview(uuid)` | `202607310002_performance_overview_membership_access.sql` |
 
 ## Open backlog
 
 ### Hoog
 
-- Voeg geautomatiseerde DB-integratietests toe voor RLS en alle `security definer`-RPC's.
-- Test iedere rol minimaal als niet-ingelogd, niet-lid, member, planner, admin, owner en superadmin.
-- Test cross-band toegang, laatste-ownerbescherming, inviteverval en gelijktijdige inviteacceptatie.
-- Laat CI migrations op een tijdelijke Supabase/PostgreSQL-testdatabase uitvoeren.
+- Breid pgTAP-tests (`supabase/tests/database/`) uit naar alle `security definer`-RPC's; basisdekking per rol bestaat.
+- Test laatste-ownerbescherming, inviteverval en gelijktijdige inviteacceptatie.
 
 ### Middel
 
-- Genereer Supabase TypeScript-types vanuit actueel schema en vervang handmatige API-casts.
 - Controleer en documenteer expliciete `EXECUTE`-rechten voor publieke en ingelogde RPC-aanroepen.
 - Voeg regressietests toe voor performance-overzicht, response-redenen en instrumentgroepering.
 - Leg per toekomstige destructieve migratie herstel- of dataconversiestrategie vast.

@@ -1,24 +1,44 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const appVersion = '0.0.1'
+const appVersion: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'vendor-supabase', test: /node_modules[\\/]@supabase[\\/]/ },
+            { name: 'vendor-query', test: /node_modules[\\/]@tanstack[\\/]/ },
+            { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       manifestFilename: 'manifest.json',
-      includeAssets: ['favicon-v2.png', 'apple-touch-icon-v2.png', 'icons.svg', 'logo-v2.png'],
+      includeAssets: ['favicon-v2.png', 'apple-touch-icon-v2.png', 'icons.svg', 'logo-v2.png', 'icon-maskable-512.png'],
       manifest: {
         id: '/',
         name: 'Kapel App',
         short_name: 'Kapel App',
-        description: 'Planning en afstemming voor kapellen en optredens.',
-        theme_color: '#2456d6',
-        background_color: '#f3f7fb',
+        description:
+          'Plan optredens met je kapel: zie wie er komt, reageer met één tik en deel berichten met je kapelgenoten.',
+        lang: 'nl',
+        categories: ['music', 'productivity'],
+        theme_color: '#5b21b6',
+        background_color: '#f8f6fc',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -28,11 +48,7 @@ export default defineConfig({
             src: '/icon-192-v2.png',
             sizes: '192x192',
             type: 'image/png',
-          },
-          {
-            src: '/icon-512-v2.png',
-            sizes: '512x512',
-            type: 'image/png',
+            purpose: 'any',
           },
           {
             src: '/icon-512-v2.png',
@@ -41,13 +57,12 @@ export default defineConfig({
             purpose: 'any',
           },
           {
-            src: '/icon-512-v2.png',
+            src: '/icon-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
           },
         ],
-
       },
       workbox: {
         cacheId: `kapelapp-${appVersion}`,

@@ -5,11 +5,12 @@ import { EmptyState } from '../../../components/EmptyState'
 import { LoadingState } from '../../../components/LoadingState'
 import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../hooks/useBand'
+import { formatRoleLabel, isAdminRole } from '../../../lib/roles'
 
 export function BandSwitcherPage() {
   const { activeBandId, memberships, isLoading, error } = useBand()
   const activeMembership = memberships.find((membership) => membership.band_id === activeBandId)
-  const canManageBand = ['admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManageBand = isAdminRole(activeMembership?.role)
 
   return (
     <div className="page-grid">
@@ -33,11 +34,11 @@ export function BandSwitcherPage() {
               <div key={membership.id} className={isActive ? 'band-tile band-tile--active band-tile--enhanced' : 'band-tile band-tile--enhanced'}>
                 <div className="band-tile__topline">
                   <strong>{membership.band.name}</strong>
-                  <Badge tone={isActive ? 'brand' : 'neutral'}>{isActive ? 'Actief' : membership.role}</Badge>
+                  <Badge tone={isActive ? 'brand' : 'neutral'}>{isActive ? 'Actief' : formatRoleLabel(membership.role)}</Badge>
                 </div>
                 <span>{membership.band.description ?? 'Geen beschrijving toegevoegd'}</span>
                 <div className="band-tile__meta-row">
-                  <span>Rol: {membership.role}</span>
+                  <span>Rol: {formatRoleLabel(membership.role)}</span>
                   <span>Instrument: {membership.instrument ?? 'Niet ingevuld'}</span>
                 </div>
 
@@ -47,7 +48,7 @@ export function BandSwitcherPage() {
                       Ga naar optredens
                     </Link>
                     {canManageBand ? (
-                      <Link to="/settings/band" className="performance-secondary-link">
+                      <Link to="/admin?tab=band" className="performance-secondary-link">
                         Kapelinstellingen
                       </Link>
                     ) : null}

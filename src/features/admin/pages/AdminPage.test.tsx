@@ -3,6 +3,16 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AdminPage } from './AdminPage'
 
+const navigate = vi.fn()
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => navigate,
+  }
+})
+
 vi.mock('../../auth/hooks/useAuth', () => ({
   useAuth: () => ({
     profile: { is_superadmin: true },
@@ -29,6 +39,7 @@ afterEach(cleanup)
 
 describe('AdminPage', () => {
   it('returns directly to performances', () => {
+    navigate.mockReset()
     const router = createMemoryRouter(
       [
         { path: '/admin', element: <AdminPage /> },
@@ -43,6 +54,8 @@ describe('AdminPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Terug' }))
 
-    expect(router.state.location.pathname).toBe('/performances')
+    expect(navigate).toHaveBeenCalledWith('/performances', {
+      replace: true,
+    })
   })
 })

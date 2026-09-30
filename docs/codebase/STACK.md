@@ -14,9 +14,9 @@
 | Dependency | Version | Role in system | Evidence |
 |------------|---------|----------------|----------|
 | React / React DOM | ^19.2.7 | Component UI and browser rendering | `package.json`, `src/main.tsx` |
-| React Router DOM | ^7.18.1 | Browser routing and route guards | `package.json`, `src/app/router.tsx` |
+| React Router DOM | ^7.18.4 | Browser routing and route guards | `package.json`, `src/app/router.tsx` |
 | Supabase JS | ^2.110.8 | Auth, PostgreSQL table access and RPC calls | `package.json`, `src/lib/supabase/client.ts` |
-| TanStack React Query | ^5.101.4 | Server-state queries, cache and invalidation | `package.json`, `src/app/providers/AppProviders.tsx` |
+| TanStack React Query | ^5.101.4 | Server-state queries, cache and invalidation; persisted to `localStorage` for offline use | `package.json`, `src/app/providers/AppProviders.tsx`, `src/lib/queryPersistence.ts` |
 
 PostgreSQL schema, constraints, RLS policies and RPC functions live in `supabase/migrations/`.
 
@@ -27,14 +27,14 @@ PostgreSQL schema, constraints, RLS policies and RPC functions live in `supabase
 | TypeScript ~6.0.2 | Type checking during build | `package.json`, `tsconfig.app.json` |
 | Vite ^8.1.1 | Dev server and production bundle | `package.json`, `vite.config.ts` |
 | @vitejs/plugin-react ^6.0.3 | React integration used by Vite | `package.json`, `vite.config.ts` |
-| @vitejs/plugin-react-swc ^4.3.2 | Installed alternative React compiler plugin; no config import found | `package.json`, `vite.config.ts` |
-| vite-plugin-pwa ^1.3.0 | Manifest and auto-update service worker | `package.json`, `vite.config.ts`, `src/main.tsx` |
+| vite-plugin-pwa ^1.3.0 | Manifest and service worker with in-app update prompt | `package.json`, `vite.config.ts`, `src/main.tsx` |
 | Vitest ^3.2.7 | Test runner | `package.json`, `vitest.config.ts` |
 | @testing-library/react ^16.3.2 | React component tests | `package.json`, `src/app/HomeRedirect.test.tsx` |
 | @testing-library/jest-dom ^7.0.0 | DOM matchers | `package.json`, `src/test/setup.ts` |
 | jsdom ^27.0.1 | Browser-like test environment | `package.json`, `vitest.config.ts` |
 | Oxlint ^1.71.0 | Linting | `package.json`, `.oxlintrc.json` |
-| @types/node ^24.13.2 | Node.js types for build config | `package.json`, `tsconfig.node.json` |
+| Supabase CLI | Local database, pgTAP tests and type generation | `package.json`, `supabase/config.toml` |
+| @types/node ^26.6.3 | Node.js types for build config | `package.json`, `tsconfig.node.json` |
 | @types/react ^19.2.17 | React TypeScript declarations | `package.json` |
 | @types/react-dom ^19.2.3 | React DOM TypeScript declarations | `package.json` |
 
@@ -47,14 +47,14 @@ npm run test
 npm run lint
 ```
 
-Other scripts: `npm run dev`, `npm run preview`, `npm run test:watch`.
+Other scripts: `npm run dev`, `npm run preview`, `npm run test:watch`, `npm run db:start`, `npm run db:test`, `npm run db:types`.
 
 ## 5) Environment and Config
 
 - Config sources: `.env.example`, Vite environment variables, `vite.config.ts`, `vitest.config.ts`, TypeScript configs.
 - Required variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
 - Only public Supabase client configuration enters frontend builds; no backend `service_role` key is referenced.
-- GitHub Pages deploy uses Node.js 26, `npm ci`, `npm run build`, `dist/`, and a copied `dist/404.html` SPA fallback.
+- GitHub Pages deploy uses Node.js 26, `npm ci`, `npm run lint`, `npm run test`, `npm run build`, `dist/`, and a copied `dist/404.html` SPA fallback.
 - No container configuration exists.
 
 ## 6) Evidence

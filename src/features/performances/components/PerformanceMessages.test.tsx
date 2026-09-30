@@ -16,6 +16,7 @@ vi.mock('../api/messages', () => ({
 afterEach(() => {
   cleanup()
   vi.resetAllMocks()
+  window.localStorage.clear()
 })
 
 function renderMessages(props: Partial<React.ComponentProps<typeof PerformanceMessages>> = {}) {
@@ -101,5 +102,19 @@ describe('PerformanceMessages', () => {
 
     expect(screen.getByText('Schrijf eerst een bericht.')).toBeVisible()
     expect(createPerformanceMessage).not.toHaveBeenCalled()
+  })
+
+  it('counts messages from others since the last visit as new', async () => {
+    window.localStorage.setItem('kapelapp.messagesSeen.performance-1', '2026-08-01T10:00:00.000Z')
+    listPerformanceMessages.mockResolvedValue([
+      { id: 'message-1', user_id: 'user-2', author_name: 'Bram', body: 'Oud', created_at: '2026-08-01T10:00:00.000Z' },
+      { id: 'message-2', user_id: 'user-2', author_name: 'Bram', body: 'Nieuw', created_at: '2026-08-01T11:00:00.000Z' },
+      { id: 'message-3', user_id: 'user-1', author_name: 'Anne', body: 'Eigen', created_at: '2026-08-01T12:00:00.000Z' },
+    ])
+
+    renderMessages()
+
+    expect(await screen.findByRole('status')).toHaveTextContent('1 nieuw bericht')
+    expect(window.localStorage.getItem('kapelapp.messagesSeen.performance-1')).toBe('2026-08-01T12:00:00.000Z')
   })
 })

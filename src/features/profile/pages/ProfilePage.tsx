@@ -9,6 +9,9 @@ import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../../bands/queryKeys'
+import { formatRoleLabel } from '../../../lib/roles'
 
 export function ProfilePage() {
   const { profile, saveProfile, signOut, user } = useAuth()
@@ -26,7 +29,7 @@ export function ProfilePage() {
   const [isConfirmingLeave, setIsConfirmingLeave] = useState(false)
 
   const instrumentsQuery = useQuery({
-    queryKey: ['band-instruments', activeMembership?.band.id, false],
+    queryKey: bandKeys.instruments(activeMembership?.band.id, false),
     queryFn: async () => listBandInstruments(activeMembership!.band.id),
     enabled: Boolean(activeMembership?.band.id),
   })
@@ -69,7 +72,7 @@ export function ProfilePage() {
       await saveProfile({ displayName })
       setMessage('Profiel opgeslagen.')
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSaving(false)
     }
@@ -94,7 +97,7 @@ export function ProfilePage() {
       await refreshBands()
       setMembershipMessage('Instrument opgeslagen.')
     } catch (submitError) {
-      setMembershipError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setMembershipError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSavingMembership(false)
     }
@@ -118,7 +121,7 @@ export function ProfilePage() {
     try {
       await leaveActiveBand()
     } catch (submitError) {
-      setMembershipError(submitError instanceof Error ? submitError.message : 'Kapel verlaten mislukt.')
+      setMembershipError(getErrorMessage(submitError, 'Kapel verlaten mislukt.'))
     } finally {
       setIsLeavingBand(false)
     }
@@ -258,17 +261,4 @@ export function ProfilePage() {
       </PageCard>
     </div>
   )
-}
-
-function formatRoleLabel(role: 'member' | 'planner' | 'admin' | 'owner') {
-  switch (role) {
-    case 'member':
-      return 'Lid'
-    case 'planner':
-      return 'Planner'
-    case 'admin':
-      return 'Admin'
-    case 'owner':
-      return 'Eigenaar'
-  }
 }

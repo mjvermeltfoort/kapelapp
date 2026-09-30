@@ -1,70 +1,60 @@
 import type { RegisterSWOptions } from 'virtual:pwa-register'
 
-const UPDATE_TIMEOUT_MS = 3_000
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000
 
-type ServiceWorkerRegistrar = (options: RegisterSWOptions) => unknown
+type ServiceWorkerRegistrar = (options: RegisterSWOptions) => (reloadPage?: boolean) => Promise<void>
 
-function waitForWorker(worker: ServiceWorker): Promise<void> {
-  if (worker.state === 'activated' || worker.state === 'redundant') {
-    return Promise.resolve()
-  }
+let updateAvailable = false
+let applyServiceWorkerUpdate: ((reloadPage?: boolean) => Promise<void>) | null = null
+const listeners = new Set<() => void>()
 
-  return new Promise((resolve) => {
-    const handleStateChange = () => {
-      if (worker.state !== 'activated' && worker.state !== 'redundant') {
-        return
-      }
-
-      worker.removeEventListener('statechange', handleStateChange)
-      resolve()
-    }
-
-    worker.addEventListener('statechange', handleStateChange)
-  })
+function setUpdateAvailable(value: boolean) {
+  updateAvailable = value
+  listeners.forEach((listener) => listener())
 }
 
-export function waitForLatestAppVersion(
-  register: ServiceWorkerRegistrar,
-  timeoutMs = UPDATE_TIMEOUT_MS,
-): Promise<void> {
+export function subscribeToAppUpdate(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+export function isAppUpdateAvailable() {
+  return updateAvailable
+}
+
+export async function applyAppUpdate() {
+  if (applyServiceWorkerUpdate) {
+    await applyServiceWorkerUpdate(true)
+  } else {
+    window.location.reload()
+  }
+}
+
+export function startAppUpdates(register: ServiceWorkerRegistrar) {
   if (!('serviceWorker' in navigator)) {
-    return Promise.resolve()
+    return
   }
 
-  return new Promise((resolve) => {
-    let finished = false
-    const finish = () => {
-      if (finished) {
+  applyServiceWorkerUpdate = register({
+    immediate: true,
+    onNeedRefresh() {
+      setUpdateAvailable(true)
+    },
+    onRegisteredSW(_swScriptUrl, registration) {
+      if (!registration) {
         return
       }
 
-      finished = true
-      window.clearTimeout(timeout)
-      resolve()
-    }
-    const timeout = window.setTimeout(finish, timeoutMs)
+      const checkForUpdate = () => {
+        if (document.visibilityState === 'visible' && navigator.onLine) {
+          void registration.update().catch(() => undefined)
+        }
+      }
 
-    try {
-      register({
-        immediate: true,
-        onRegisteredSW(_swScriptUrl, registration) {
-          if (!registration) {
-            finish()
-            return
-          }
-
-          void registration
-            .update()
-            .then((updatedRegistration) => {
-              const worker = updatedRegistration.installing ?? updatedRegistration.waiting
-              return worker ? waitForWorker(worker) : undefined
-            })
-            .then(finish, finish)
-        },
-        onRegisterError: finish,
-      })
-    } catch {
-      finish()
-    }
+      window.setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS)
+      document.addEventListener('visibilitychange', checkForUpdate)
+    },
   })
 }

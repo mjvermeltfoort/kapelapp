@@ -7,6 +7,8 @@ import { LoadingState } from '../../../components/LoadingState'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../../bands/queryKeys'
 
 export function ProfileSetupPage() {
   const navigate = useNavigate()
@@ -21,7 +23,7 @@ export function ProfileSetupPage() {
   const [isSaving, setIsSaving] = useState(false)
 
   const instrumentsQuery = useQuery({
-    queryKey: ['band-instruments', activeMembership?.band.id, true],
+    queryKey: bandKeys.instruments(activeMembership?.band.id, true),
     queryFn: async () => listBandInstruments(activeMembership!.band.id),
     enabled: Boolean(activeMembership?.band.id),
   })
@@ -83,7 +85,7 @@ export function ProfileSetupPage() {
 
       navigate(searchParams.get('next') || '/', { replace: true })
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSaving(false)
     }
@@ -118,7 +120,7 @@ export function ProfileSetupPage() {
               <h2>Instrument</h2>
               {promptInstrument ? <p className="muted-text">Kies hier je instrument om verder te gaan.</p> : null}
               {instrumentsQuery.isLoading ? <LoadingState>Instrumenten worden geladen…</LoadingState> : null}
-              {instrumentsQuery.error instanceof Error ? <p role="alert">{instrumentsQuery.error.message}</p> : null}
+              {instrumentsQuery.error ? <p role="alert">{getErrorMessage(instrumentsQuery.error)}</p> : null}
 
               {!instrumentsQuery.isLoading ? (
                 <>

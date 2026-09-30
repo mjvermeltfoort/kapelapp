@@ -1,7 +1,11 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type PropsWithChildren, createContext, useEffect, useMemo, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client'
 import { ensureProfile, type Profile, updateMyProfile } from '../../profile/api/profiles'
+import { clearStoredActiveBandId } from '../../bands/providers/activeBandStorage'
+import { clearPersistedQueries } from '../../../lib/queryPersistence'
+import { profileKeys } from '../../profile/queryKeys'
 
 type AuthContextValue = {
   isConfigured: boolean
@@ -9,6 +13,7 @@ type AuthContextValue = {
   session: Session | null
   user: User | null
   profile: Profile | null
+  profileLoadFailed: boolean
   refreshProfile: () => Promise<void>
   saveProfile: (input: { displayName: string }) => Promise<Profile>
   signOut: () => Promise<void>
@@ -17,79 +22,33 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const [isSessionKnown, setIsSessionKnown] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const user = session?.user ?? null
+  const userId = user?.id ?? null
+  const userEmail = user?.email
 
   useEffect(() => {
     let isMounted = true
 
-    async function bootstrap() {
-      try {
-        const { data } = await supabase.auth.getSession()
-
-        if (!isMounted) {
-          return
-        }
-
+    void supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) {
         setSession(data.session)
-
-        if (!data.session?.user) {
-          setProfile(null)
-          return
-        }
-
-        const nextProfile = await ensureProfile(data.session.user)
-
-        if (!isMounted) {
-          return
-        }
-
-        setProfile(nextProfile)
-      } catch (error) {
-        console.error('Auth bootstrap failed', error)
-        if (isMounted) {
-          setProfile(null)
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        setIsSessionKnown(true)
       }
-    }
-
-    void bootstrap()
+    })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession)
+      setIsSessionKnown(true)
 
-      if (!nextSession?.user) {
-        setProfile(null)
-        setIsLoading(false)
-        return
-      }
-
-      setIsLoading(true)
-
-      try {
-        const nextProfile = await ensureProfile(nextSession.user)
-
-        if (!isMounted) {
-          return
-        }
-
-        setProfile(nextProfile)
-      } catch (error) {
-        console.error('Profile sync failed', error)
-        if (isMounted) {
-          setProfile(null)
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+      if (event === 'SIGNED_OUT') {
+        queryClient.clear()
+        clearPersistedQueries()
+        clearStoredActiveBandId()
       }
     })
 
@@ -97,34 +56,47 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [])
+  }, [queryClient])
+
+  const profileQuery = useQuery({
+    queryKey: profileKeys.mineWithEmail(userId, userEmail),
+    queryFn: async () => ensureProfile({ id: userId!, email: userEmail }),
+    enabled: Boolean(userId),
+  })
+
+  const profile = userId ? (profileQuery.data ?? null) : null
+  const profileLoadFailed =
+    Boolean(userId) && !profileQuery.data && (profileQuery.isError || profileQuery.fetchStatus === 'paused')
+  const isLoading = !isSessionKnown || (Boolean(userId) && !profileQuery.data && !profileLoadFailed)
 
   const value = useMemo<AuthContextValue>(
     () => ({
       isConfigured: isSupabaseConfigured,
       isLoading,
       session,
-      user: session?.user ?? null,
+      user,
       profile,
+      profileLoadFailed,
       refreshProfile: async () => {
-        if (!session?.user) {
-          setProfile(null)
+        if (!user) {
           return
         }
 
-        const nextProfile = await ensureProfile(session.user)
-        setProfile(nextProfile)
+        await queryClient.refetchQueries({ queryKey: profileKeys.mine(user.id) })
       },
       saveProfile: async ({ displayName }) => {
         const nextProfile = await updateMyProfile({ displayName })
-        setProfile(nextProfile)
+        queryClient.setQueriesData({ queryKey: profileKeys.mine(nextProfile.id) }, nextProfile)
         return nextProfile
       },
       signOut: async () => {
         await supabase.auth.signOut()
+        queryClient.clear()
+        clearPersistedQueries()
+        clearStoredActiveBandId()
       },
     }),
-    [isLoading, profile, session],
+    [isLoading, profile, profileLoadFailed, queryClient, session, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

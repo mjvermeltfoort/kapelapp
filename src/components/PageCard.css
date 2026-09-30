@@ -52,7 +52,7 @@
 }
 
 .page-card__back-button:hover {
-  background: color-mix(in srgb, var(--color-brand-50) 55%, white);
+  background: color-mix(in srgb, var(--color-brand-50) 55%, var(--color-background-surface));
 }
 
 .page-card__back-button:active {
