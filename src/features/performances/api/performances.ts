@@ -1,3 +1,4 @@
+import { dateTimeLocalToISOString } from '../../../lib/dates'
 import { supabase } from '../../../lib/supabase/client'
 import type { Tables } from '../../../lib/supabase/database.types'
 
@@ -115,7 +116,7 @@ export async function createPerformance(input: PerformanceInput): Promise<Perfor
       gather_time: input.gatherTime || null,
       location: input.location.trim(),
       map_url: input.mapUrl.trim() || null,
-      response_deadline: input.responseDeadline || null,
+      response_deadline: dateTimeLocalToISOString(input.responseDeadline),
       status: input.status,
       cancelled_at: input.status === 'cancelled' ? new Date().toISOString() : null,
       archived_at: input.status === 'archived' ? new Date().toISOString() : null,
@@ -155,7 +156,7 @@ export async function updatePerformance(
       gather_time: input.gatherTime || null,
       location: input.location.trim(),
       map_url: input.mapUrl.trim() || null,
-      response_deadline: input.responseDeadline || null,
+      response_deadline: dateTimeLocalToISOString(input.responseDeadline),
       status: input.status,
       cancelled_at: input.status === 'cancelled' ? new Date().toISOString() : null,
       archived_at: input.status === 'archived' ? new Date().toISOString() : null,

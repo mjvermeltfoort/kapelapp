@@ -42,7 +42,15 @@ export function PerformanceForm({ mode, submitLabel, initialValues, onSubmit }: 
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    await submitWithStatus(values.status, 'default')
+    if (isSubmitting || !event.currentTarget.reportValidity()) {
+      return
+    }
+
+    const submitter = (event.nativeEvent as SubmitEvent).submitter
+    const action = mode === 'create'
+      ? (submitter?.getAttribute('value') === 'published' ? 'published' : 'draft')
+      : 'default'
+    await submitWithStatus(action === 'default' ? values.status : action, action)
   }
 
   return (
@@ -187,10 +195,10 @@ export function PerformanceForm({ mode, submitLabel, initialValues, onSubmit }: 
       <div className="performance-form__footer">
         {mode === 'create' ? (
           <>
-            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void submitWithStatus('draft', 'draft')} fullWidth>
+            <Button type="submit" name="status" value="draft" variant="secondary" disabled={isSubmitting} fullWidth>
               {isSubmitting && submitAction === 'draft' ? 'Bezig met opslaan…' : 'Opslaan als concept'}
             </Button>
-            <Button type="button" disabled={isSubmitting} onClick={() => void submitWithStatus('published', 'published')} fullWidth>
+            <Button type="submit" name="status" value="published" disabled={isSubmitting} fullWidth>
               {isSubmitting && submitAction === 'published' ? 'Bezig met opslaan…' : 'Publiceren'}
             </Button>
           </>

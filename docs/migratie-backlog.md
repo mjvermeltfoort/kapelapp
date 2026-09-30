@@ -1,6 +1,6 @@
 # Migratie-overzicht en backlog
 
-Bijgewerkt: 2026-07-29.
+Bijgewerkt: 2026-09-30.
 
 Dit document beschrijft huidige PostgreSQL/Supabase-migratiestatus. Toegepaste migraties blijven onveranderlijk; correcties en uitbreidingen krijgen altijd een nieuw oplopend migratiebestand.
 
@@ -38,6 +38,7 @@ Dit document beschrijft huidige PostgreSQL/Supabase-migratiestatus. Toegepaste m
 | `202607310002_performance_overview_membership_access.sql` | gereed | Staat planner-overzicht weer toe voor alle actieve kapelleden. |
 | `202607310003_performance_messages.sql` | gereed | Voegt berichten per optreden toe met RLS en auteurtrigger. |
 | `202609300001_restrict_profile_columns.sql` | gereed | Beperkt schrijfrechten op `profiles` tot `email` en `display_name`, zodat gebruikers zichzelf geen superadmin kunnen maken. |
+| `202609300002_enforce_performance_overview_visibility.sql` | gereed | Dwingt de reactieprivacy en afscherming van conceptoptredens af in de overzichts-RPC; behoudt beheertoegang voor planners, admins, owners en superadmins. |
 
 ## Actuele functiedefinities
 
@@ -45,7 +46,7 @@ Sommige functies zijn in meerdere migraties opnieuw gedefinieerd. De laatste def
 
 | Functie | Actuele definitie |
 |---------|-------------------|
-| `get_performance_response_overview(uuid)` | `202607310002_performance_overview_membership_access.sql` |
+| `get_performance_response_overview(uuid)` | `202609300002_enforce_performance_overview_visibility.sql` |
 
 ## Open backlog
 
@@ -57,7 +58,7 @@ Sommige functies zijn in meerdere migraties opnieuw gedefinieerd. De laatste def
 ### Middel
 
 - Controleer en documenteer expliciete `EXECUTE`-rechten voor publieke en ingelogde RPC-aanroepen.
-- Voeg regressietests toe voor performance-overzicht, response-redenen en instrumentgroepering.
+- Breid de bestaande regressietests voor performance-overzicht en response-redenen uit met instrumentgroepering.
 - Leg per toekomstige destructieve migratie herstel- of dataconversiestrategie vast.
 
 ### Laag
@@ -83,3 +84,7 @@ Sommige functies zijn in meerdere migraties opnieuw gedefinieerd. De laatste def
 - `src/lib/supabase/client.ts`
 - `docs/codebase/ARCHITECTURE.md`
 - `docs/codebase/CONCERNS.md`
+
+## Uitrol van de privacycorrectie
+
+Pas migratie `202609300002_enforce_performance_overview_visibility.sql` toe op het gekoppelde Supabase-project vóór de frontenduitrol. GitHub Pages publiceert alleen de frontend; het voert geen Supabase-migraties uit. Er is geen dataconversie nodig en de RPC-signatuur en JSON-structuur blijven gelijk. De 15 nieuwe pgTAP-tests controleren rollen, privacy aan/uit, concepten en ingetrokken toegang.

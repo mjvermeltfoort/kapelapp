@@ -14,6 +14,8 @@ concurrency:
 jobs:
   app:
     runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Amsterdam
 
     steps:
       - name: Checkout
