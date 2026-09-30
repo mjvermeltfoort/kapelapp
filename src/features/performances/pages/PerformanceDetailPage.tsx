@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { lazy, Suspense } from 'react'
 import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/Alert'
 import { Badge } from '../../../components/Badge'
@@ -10,12 +11,15 @@ import { useBand } from '../../bands/hooks/useBand'
 import { PerformanceResponseForm } from '../../responses/components/PerformanceResponseForm'
 import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../responses/api/responses'
 import { getPerformance } from '../api/performances'
-import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 import { PerformanceMessages } from '../components/PerformanceMessages'
 import { getErrorMessage } from '../../../lib/errors'
 import { performanceKeys } from '../queryKeys'
 import { responseKeys } from '../../responses/queryKeys'
 import { parseDateOnly } from '../../../lib/dates'
+
+const PlannerOverviewModal = lazy(async () =>
+  import('../components/PlannerOverviewModal').then((module) => ({ default: module.PlannerOverviewModal })),
+)
 
 export function PerformanceDetailPage() {
   const navigate = useNavigate()
@@ -175,13 +179,17 @@ export function PerformanceDetailPage() {
         ) : null}
       </div>
 
-      <PlannerOverviewModal
-        performanceId={performance.id}
-        performance={performance}
-        canViewOverview={canViewPlannerOverview}
-        isOpen={Boolean(plannerOverviewMatch)}
-        onClose={() => void navigate(`/performances/${performance.id}`, { replace: true })}
-      />
+      {plannerOverviewMatch ? (
+        <Suspense fallback={null}>
+          <PlannerOverviewModal
+            performanceId={performance.id}
+            performance={performance}
+            canViewOverview={canViewPlannerOverview}
+            isOpen
+            onClose={() => void navigate(`/performances/${performance.id}`, { replace: true })}
+          />
+        </Suspense>
+      ) : null}
     </>
   )
 }

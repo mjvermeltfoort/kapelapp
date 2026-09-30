@@ -4,6 +4,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client'
 import { ensureProfile, type Profile, updateMyProfile } from '../../profile/api/profiles'
 import { clearStoredActiveBandId } from '../../bands/providers/activeBandStorage'
+import { clearPersistedQueries } from '../../../lib/queryPersistence'
 
 type AuthContextValue = {
   isConfigured: boolean
@@ -45,6 +46,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       if (event === 'SIGNED_OUT') {
         queryClient.clear()
+        clearPersistedQueries()
         clearStoredActiveBandId()
       }
     })
@@ -106,6 +108,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut: async () => {
         await supabase.auth.signOut()
         queryClient.clear()
+        clearPersistedQueries()
         clearStoredActiveBandId()
       },
     }),

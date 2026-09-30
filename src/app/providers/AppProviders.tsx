@@ -1,7 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { type PropsWithChildren, useState } from 'react'
 import { AuthProvider } from '../../features/auth/providers/AuthProvider'
 import { BandProvider } from '../../features/bands/providers/BandProvider'
+import { PERSIST_MAX_AGE_MS, queryPersister, shouldPersistQuery } from '../../lib/queryPersistence'
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -11,6 +13,7 @@ export function AppProviders({ children }: PropsWithChildren) {
           queries: {
             retry: 1,
             staleTime: 30_000,
+            gcTime: PERSIST_MAX_AGE_MS,
             refetchOnWindowFocus: false,
           },
         },
@@ -18,10 +21,18 @@ export function AppProviders({ children }: PropsWithChildren) {
   )
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: queryPersister,
+        maxAge: PERSIST_MAX_AGE_MS,
+        buster: __APP_VERSION__,
+        dehydrateOptions: { shouldDehydrateQuery: shouldPersistQuery },
+      }}
+    >
       <AuthProvider>
         <BandProvider>{children}</BandProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   )
 }

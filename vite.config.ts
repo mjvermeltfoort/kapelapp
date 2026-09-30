@@ -1,15 +1,32 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const appVersion = '0.0.1'
+const appVersion: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'vendor-supabase', test: /node_modules[\\/]@supabase[\\/]/ },
+            { name: 'vendor-query', test: /node_modules[\\/]@tanstack[\\/]/ },
+            { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       manifestFilename: 'manifest.json',
       includeAssets: ['favicon-v2.png', 'apple-touch-icon-v2.png', 'icons.svg', 'logo-v2.png'],
       manifest: {
