@@ -48,7 +48,7 @@
 }
 
 .install-banner__button:hover {
-  background: var(--color-brand-50);
+  background: rgb(255 255 255 / 0.88);
 }
 
 .app-header {

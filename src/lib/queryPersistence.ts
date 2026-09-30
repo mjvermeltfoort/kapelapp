@@ -3,6 +3,7 @@ import type { Query } from '@tanstack/react-query'
 
 const PERSIST_STORAGE_KEY = 'kapelapp.queryCache'
 const PERSISTED_QUERY_ROOTS = new Set([
+  'my-profile',
   'my-band-memberships',
   'performances',
   'performance',
