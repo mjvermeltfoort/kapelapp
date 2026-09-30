@@ -25,11 +25,9 @@ export function PerformanceDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { performanceId } = useParams()
-  const { activeMembership } = useBand()
-  const { user } = useAuth()
+  const { activeMembership, memberships } = useBand()
+  const { user, profile } = useAuth()
   const plannerOverviewMatch = useMatch('/performances/:performanceId/planner-overview')
-  const canManagePerformances = canManage(activeMembership?.role)
-  const canViewPlannerOverview = Boolean(activeMembership)
 
   const performanceQuery = useQuery({
     queryKey: performanceKeys.detail(performanceId),
@@ -70,6 +68,11 @@ export function PerformanceDetailPage() {
   }
 
   const performance = performanceQuery.data
+  const performanceMembership = memberships.find((membership) => membership.band_id === performance.band_id)
+  const canManagePerformances = Boolean(profile?.is_superadmin) || canManage(performanceMembership?.role)
+  const canViewPlannerOverview = canManagePerformances || (
+    Boolean(performanceMembership?.band.show_member_responses) && performance.status !== 'draft'
+  )
 
   return (
     <>

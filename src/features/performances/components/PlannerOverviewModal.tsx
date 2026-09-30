@@ -49,7 +49,7 @@ export function PlannerOverviewModal({
     enabled: isOpen && canViewOverview,
   })
 
-  const overview = overviewQuery.data
+  const overview = overviewQuery.isError ? undefined : overviewQuery.data
   const reminder = useCopyReminder(overview ? buildReminderText(overview) : '')
   const instrumentGroups = useMemo(() => (overview ? groupPeopleByInstrument(overview) : []), [overview])
   const swipe = useSwipeToClose(onClose)
@@ -118,7 +118,7 @@ export function PlannerOverviewModal({
           </header>
 
           {!canViewOverview ? (
-            <Alert tone="error">Alleen planners, beheerders en eigenaren hebben toegang.</Alert>
+            <Alert tone="error">Je hebt geen toegang tot het reactieoverzicht van dit optreden.</Alert>
           ) : null}
 
           {canViewOverview && overviewQuery.isLoading ? <LoadingState>Overzicht wordt geladen…</LoadingState> : null}

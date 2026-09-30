@@ -71,4 +71,32 @@ describe('PerformanceForm', () => {
     expect(screen.getByText('Status')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Wijzigingen opslaan' })).toBeInTheDocument()
   })
+
+  it.each(['Opslaan als concept', 'Publiceren'])('blocks %s when required fields are empty', (button) => {
+    const onSubmit = vi.fn()
+    render(<PerformanceForm mode="create" initialValues={{ ...initialValues, title: '' }} onSubmit={onSubmit} />)
+
+    fireEvent.click(screen.getByRole('button', { name: button }))
+
+    expect(screen.getByLabelText('Titel')).toBeInvalid()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('blocks publishing an invalid map URL', () => {
+    const onSubmit = vi.fn()
+    render(<PerformanceForm mode="create" initialValues={{ ...initialValues, mapUrl: 'geen-url' }} onSubmit={onSubmit} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publiceren' }))
+
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('preserves the selected status when editing', async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined)
+    render(<PerformanceForm mode="edit" submitLabel="Wijzigingen opslaan" initialValues={{ ...initialValues, status: 'cancelled' }} onSubmit={onSubmit} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Wijzigingen opslaan' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ ...initialValues, status: 'cancelled' }))
+  })
 })

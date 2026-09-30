@@ -22,6 +22,28 @@ export function todayKey(now = new Date()): string {
   return toDateKey(now)
 }
 
+export function toDateTimeLocal(value: string | null): string {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(value)
+  return `${toDateKey(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+export function dateTimeLocalToISOString(value: string): string | null {
+  if (!value) {
+    return null
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime()) || toDateTimeLocal(date.toISOString()) !== value) {
+    throw new Error('Kies een geldige datum en tijd voor de reactiedeadline.')
+  }
+
+  return date.toISOString()
+}
+
 export function daysUntil(value: string | Date, now = new Date()): number {
   const target = typeof value === 'string' ? parseDateOnly(value) : value
   const startOfTarget = new Date(target.getFullYear(), target.getMonth(), target.getDate())

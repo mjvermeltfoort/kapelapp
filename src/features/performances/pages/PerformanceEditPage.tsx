@@ -10,6 +10,7 @@ import { deletePerformance, getPerformance, updatePerformance } from '../api/per
 import { PerformanceForm } from '../components/PerformanceForm'
 import { getErrorMessage } from '../../../lib/errors'
 import { performanceKeys } from '../queryKeys'
+import { toDateTimeLocal } from '../../../lib/dates'
 
 export function PerformanceEditPage() {
   const navigate = useNavigate()
@@ -91,9 +92,7 @@ export function PerformanceEditPage() {
           gatherTime: performance.gather_time?.slice(0, 5) ?? '',
           location: performance.location,
           mapUrl: performance.map_url ?? '',
-          responseDeadline: performance.response_deadline
-            ? performance.response_deadline.slice(0, 16)
-            : '',
+          responseDeadline: toDateTimeLocal(performance.response_deadline),
           status: performance.status,
         }}
         onSubmit={async (values) => {
