@@ -29,7 +29,8 @@
 ## 4) Error and Logging Conventions
 
 - API layer throws Supabase errors or explicit session errors.
-- Pages/components catch errors and store a user-facing string, frequently using `error.message`.
+- Pages/components catch errors and store a user-facing string via `getErrorMessage(error, fallback)` from `src/lib/errors.ts`; never render `error.message` directly.
+- Query keys live per feature in `queryKeys.ts` (`src/features/{bands,performances,responses}/queryKeys.ts`).
 - Auth bootstrap logs failures with `console.error` plus context text.
 - No logging library, structured context schema or redaction policy exists.
 - Sensitive-data redaction rules: `[TODO]`.
