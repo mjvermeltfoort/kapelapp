@@ -13,7 +13,6 @@ import { useBand } from '../../bands/hooks/useBand'
 import {
   deactivateBandMember,
   deleteBandMember,
-  listAllMembers,
   listBandMembers,
   reactivateBandMember,
   setBandMemberRole,
@@ -37,9 +36,9 @@ export function MembersPage() {
   )
 
   const membersQuery = useQuery({
-    queryKey: isSuperadmin ? ['all-members'] : ['band-members', activeMembership?.band.id],
-    queryFn: async () => (isSuperadmin ? listAllMembers() : listBandMembers(activeMembership!.band.id)),
-    enabled: Boolean(canManageMembers && (isSuperadmin || activeMembership?.band.id)),
+    queryKey: ['band-members', activeMembership?.band.id],
+    queryFn: async () => listBandMembers(activeMembership!.band.id),
+    enabled: Boolean(canManageMembers && activeMembership?.band.id),
   })
 
   async function handleRoleChange(member: BandMemberRecord, role: BandMembership['role']) {
@@ -131,7 +130,7 @@ export function MembersPage() {
     }
   }
 
-  if (!activeMembership && !isSuperadmin) {
+  if (!activeMembership) {
     return (
       <PageCard title="Leden- en rollenbeheer">
         <p>Kies eerst een actieve kapel.</p>
@@ -149,16 +148,14 @@ export function MembersPage() {
 
   return (
     <PageCard
-      title={isSuperadmin ? 'Alle leden' : 'Leden'}
-      description={isSuperadmin ? 'Overzicht van alle leden in systeem.' : 'Beheer rollen en actieve leden van je kapel.'}
+      title="Leden"
+      description="Beheer rollen en actieve leden van je kapel."
     >
       <div className="members-header">
         <Badge tone="brand">
           {(membersQuery.data ?? []).length} lid{(membersQuery.data ?? []).length === 1 ? '' : 'en'}
         </Badge>
-        {!isSuperadmin && activeMembership ? (
-          <p className="muted-text">Kapel: {activeMembership.band.name}</p>
-        ) : null}
+        <p className="muted-text">Kapel: {activeMembership.band.name}</p>
       </div>
 
       {membersQuery.isLoading ? <LoadingState>Leden worden geladen…</LoadingState> : null}
