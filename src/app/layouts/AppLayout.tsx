@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { clearInstallPrompt, dismissIOSInstall, getInstallPrompt, hasIOSInstallBeenDismissed, isIOSSafari } from '../../lib/installPrompt'
-import { formatRoleLabel, isAdminRole } from '../../lib/roles'
+import { canManagePerformances, formatRoleLabel, isAdminRole } from '../../lib/roles'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
@@ -28,6 +28,7 @@ export function AppLayout() {
   const { profile } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
   const canManageBand = Boolean(profile?.is_superadmin) || isAdminRole(activeMembership?.role)
+  const canCreatePerformance = canManagePerformances(activeMembership?.role)
   const brandMenuRef = useRef<HTMLDivElement>(null)
   const brandTriggerRef = useRef<HTMLButtonElement>(null)
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
@@ -253,6 +254,17 @@ export function AppLayout() {
             </div>
           </div>
 
+          {canCreatePerformance ? (
+            <Link
+              to="/performances/new"
+              className="header-create-button"
+              aria-label="Optreden toevoegen"
+              title="Optreden toevoegen"
+              onClick={() => setIsBandMenuOpen(false)}
+            >
+              <Icon name="add" className="nav-icon" />
+            </Link>
+          ) : null}
         </header>
       </div>
 
