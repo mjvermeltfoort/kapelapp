@@ -14,6 +14,9 @@ import {
   updateMyInstrument,
 } from '../api/bands'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../queryKeys'
+import { readStoredActiveBandId, storeActiveBandId } from './activeBandStorage'
 
 type BandContextValue = {
   activeBandId: string | null
@@ -28,94 +31,65 @@ type BandContextValue = {
   leaveActiveBand: () => Promise<void>
 }
 
-const ACTIVE_BAND_STORAGE_KEY = 'kapelapp.activeBandId'
-
 const BandContext = createContext<BandContextValue | null>(null)
 
 export function BandProvider({ children }: PropsWithChildren) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const [activeBandId, setActiveBandIdState] = useState<string | null>(null)
+  const userId = user?.id ?? null
+  const [selection, setSelection] = useState(() => ({ userId, bandId: readStoredActiveBandId() }))
+  const selectedBandId = selection.userId === userId ? selection.bandId : readStoredActiveBandId()
 
   const membershipsQuery = useQuery({
-    queryKey: ['my-band-memberships', user?.id],
+    queryKey: bandKeys.memberships(userId),
     queryFn: listMyBandMemberships,
     enabled: Boolean(user),
   })
+  const { data: membershipsData, isLoading, error: membershipsError, refetch } = membershipsQuery
+
+  const activeBandId = useMemo(() => {
+    if (!membershipsData) {
+      return null
+    }
+
+    const hasSelection = membershipsData.some((membership) => membership.band_id === selectedBandId)
+    return hasSelection ? selectedBandId : (membershipsData[0]?.band_id ?? null)
+  }, [membershipsData, selectedBandId])
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
+    if (membershipsData) {
+      storeActiveBandId(activeBandId)
     }
-
-    const storedBandId = window.localStorage.getItem(ACTIVE_BAND_STORAGE_KEY)
-    if (storedBandId) {
-      setActiveBandIdState(storedBandId)
-    }
-  }, [])
-
-  useEffect(() => {
-    const memberships = membershipsQuery.data ?? []
-
-    if (!memberships.length) {
-      setActiveBandIdState(null)
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(ACTIVE_BAND_STORAGE_KEY)
-      }
-      return
-    }
-
-    const hasActiveSelection = activeBandId
-      ? memberships.some((membership) => membership.band_id === activeBandId)
-      : false
-
-    if (hasActiveSelection) {
-      return
-    }
-
-    const nextBandId = memberships[0]?.band_id ?? null
-    setActiveBandIdState(nextBandId)
-
-    if (typeof window !== 'undefined') {
-      if (nextBandId) {
-        window.localStorage.setItem(ACTIVE_BAND_STORAGE_KEY, nextBandId)
-      } else {
-        window.localStorage.removeItem(ACTIVE_BAND_STORAGE_KEY)
-      }
-    }
-  }, [activeBandId, membershipsQuery.data])
+  }, [activeBandId, membershipsData])
 
   const value = useMemo<BandContextValue>(() => {
-    const memberships = membershipsQuery.data ?? []
+    const memberships = membershipsData ?? []
     const activeMembership = memberships.find((membership) => membership.band_id === activeBandId) ?? null
+    const membershipsKey = bandKeys.memberships(userId)
 
     return {
       activeBandId,
       activeMembership,
       memberships,
-      isLoading: membershipsQuery.isLoading,
-      error: membershipsQuery.error instanceof Error ? membershipsQuery.error.message : null,
+      isLoading,
+      error: membershipsError ? getErrorMessage(membershipsError, 'Kapellen laden mislukt.') : null,
       setActiveBandId: (bandId: string) => {
-        setActiveBandIdState(bandId)
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(ACTIVE_BAND_STORAGE_KEY, bandId)
-        }
+        setSelection({ userId, bandId })
+        storeActiveBandId(bandId)
       },
       refreshBands: async () => {
-        await membershipsQuery.refetch()
+        await refetch()
       },
       createOwnedBand: async (input) => {
         const bandId = await createBand(input)
-        await queryClient.invalidateQueries({ queryKey: ['my-band-memberships', user?.id] })
-        setActiveBandIdState(bandId)
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(ACTIVE_BAND_STORAGE_KEY, bandId)
-        }
+        setSelection({ userId, bandId })
+        storeActiveBandId(bandId)
+        await queryClient.invalidateQueries({ queryKey: membershipsKey })
         return bandId
       },
       saveMyInstrument: async (input) => {
         await updateMyInstrument(input)
-        await queryClient.invalidateQueries({ queryKey: ['my-band-memberships', user?.id] })
+        await queryClient.invalidateQueries({ queryKey: membershipsKey })
       },
       leaveActiveBand: async () => {
         if (!activeBandId) {
@@ -123,10 +97,10 @@ export function BandProvider({ children }: PropsWithChildren) {
         }
 
         await leaveBand({ bandId: activeBandId })
-        await queryClient.invalidateQueries({ queryKey: ['my-band-memberships', user?.id] })
+        await queryClient.invalidateQueries({ queryKey: membershipsKey })
       },
     }
-  }, [activeBandId, membershipsQuery, queryClient, user?.id])
+  }, [activeBandId, isLoading, membershipsData, membershipsError, queryClient, refetch, userId])
 
   return <BandContext.Provider value={value}>{children}</BandContext.Provider>
 }

@@ -11,6 +11,8 @@ import { listBandMembers } from '../../members/api/members'
 import { createBandInstrument, deactivateBandInstrument, listBandInstruments, updateBandInstrument } from '../api/instruments'
 import { updateBand } from '../api/bands'
 import { useBand } from '../hooks/useBand'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../queryKeys'
 
 export function BandSettingsPage() {
   const queryClient = useQueryClient()
@@ -41,8 +43,8 @@ export function BandSettingsPage() {
 
   const bandId = activeMembership?.band.id ?? ''
   const canManageBand = isAdminRole(activeMembership?.role ?? '')
-  const inviteQueryKey = ['current-band-invite', bandId]
-  const instrumentQueryKey = ['band-instruments', bandId, true]
+  const inviteQueryKey = bandKeys.currentInvite(bandId)
+  const instrumentQueryKey = bandKeys.instruments(bandId, true)
 
   const inviteQuery = useQuery({
     queryKey: inviteQueryKey,
@@ -57,7 +59,7 @@ export function BandSettingsPage() {
   })
 
   const membersQuery = useQuery({
-    queryKey: ['band-members', bandId],
+    queryKey: bandKeys.members(bandId),
     queryFn: async () => listBandMembers(bandId),
     enabled: canManageBand && Boolean(bandId),
   })
@@ -107,7 +109,7 @@ export function BandSettingsPage() {
       await refreshBands()
       setSettingsMessage('Kapelinstellingen opgeslagen.')
     } catch (submitError) {
-      setSettingsError(submitError instanceof Error ? submitError.message : 'Opslaan mislukt.')
+      setSettingsError(getErrorMessage(submitError, 'Opslaan mislukt.'))
     } finally {
       setIsSavingSettings(false)
     }
@@ -159,7 +161,7 @@ export function BandSettingsPage() {
         setInviteMessage('Nieuwe uitnodigingslink gemaakt en oude link ingetrokken.')
       }
     } catch (submitError) {
-      setInviteError(submitError instanceof Error ? submitError.message : 'Nieuwe link maken mislukt.')
+      setInviteError(getErrorMessage(submitError, 'Nieuwe link maken mislukt.'))
     } finally {
       setIsRegeneratingInvite(false)
     }
@@ -194,7 +196,7 @@ export function BandSettingsPage() {
       onSuccess?.()
       setInstrumentMessage('Instrument toegevoegd.')
     } catch (submitError) {
-      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument toevoegen mislukt.')
+      setInstrumentError(getErrorMessage(submitError, 'Instrument toevoegen mislukt.'))
     } finally {
       setIsSavingInstrument(false)
     }
@@ -212,7 +214,7 @@ export function BandSettingsPage() {
       await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
       setInstrumentMessage('Instrument bijgewerkt.')
     } catch (submitError) {
-      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument bijwerken mislukt.')
+      setInstrumentError(getErrorMessage(submitError, 'Instrument bijwerken mislukt.'))
     } finally {
       setIsSavingInstrument(false)
     }
@@ -228,7 +230,7 @@ export function BandSettingsPage() {
       await queryClient.invalidateQueries({ queryKey: instrumentQueryKey })
       setInstrumentMessage('Instrument gedeactiveerd.')
     } catch (submitError) {
-      setInstrumentError(submitError instanceof Error ? submitError.message : 'Instrument deactiveren mislukt.')
+      setInstrumentError(getErrorMessage(submitError, 'Instrument deactiveren mislukt.'))
     } finally {
       setIsSavingInstrument(false)
     }
@@ -306,7 +308,7 @@ export function BandSettingsPage() {
             <p className="muted-text">Deze link blijft geldig totdat je een nieuwe link genereert.</p>
           </div>
 
-          {inviteQuery.error instanceof Error ? <Alert tone="error">{inviteQuery.error.message}</Alert> : null}
+          {inviteQuery.error ? <Alert tone="error">{getErrorMessage(inviteQuery.error)}</Alert> : null}
 
           <div className="invite-link-card">
             <FormField label="Actieve uitnodigingslink">
@@ -371,7 +373,7 @@ export function BandSettingsPage() {
 
           {instrumentMessage ? <Alert tone="success">{instrumentMessage}</Alert> : null}
           {instrumentError ? <Alert tone="error">{instrumentError}</Alert> : null}
-          {membersQuery.error instanceof Error ? <Alert tone="error">{membersQuery.error.message}</Alert> : null}
+          {membersQuery.error ? <Alert tone="error">{getErrorMessage(membersQuery.error)}</Alert> : null}
 
           {missingMemberInstruments.length ? (
             <div className="members-list">

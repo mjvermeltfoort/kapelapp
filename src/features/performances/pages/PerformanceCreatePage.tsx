@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
 import { canManagePerformances as canManage } from '../../../lib/roles'
 import { useBand } from '../../bands/hooks/useBand'
 import { createPerformance } from '../api/performances'
 import { PerformanceForm } from '../components/PerformanceForm'
+import { performanceKeys } from '../queryKeys'
 
 const initialValues = {
   title: '',
@@ -20,6 +22,7 @@ const initialValues = {
 
 export function PerformanceCreatePage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { activeMembership } = useBand()
   const canManagePerformances = canManage(activeMembership?.role)
 
@@ -49,6 +52,7 @@ export function PerformanceCreatePage() {
             bandId: activeMembership.band.id,
             ...values,
           })
+          await queryClient.invalidateQueries({ queryKey: performanceKeys.list(activeMembership.band.id) })
           navigate(`/performances/${performance.id}`, { replace: true })
         }}
       />

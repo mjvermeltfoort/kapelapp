@@ -1,17 +1,14 @@
 import { supabase } from '../../../lib/supabase/client'
+import type { Tables, TablesInsert } from '../../../lib/supabase/database.types'
+import type { FilledByTrigger } from '../../../lib/supabase/types'
 
 export type ResponseValue = 'yes' | 'maybe' | 'no'
 
-export type PerformanceResponse = {
-  id: string
-  performance_id: string
-  band_id: string
-  user_id: string
-  response: ResponseValue
-  reason: string | null
-  responded_at: string
-  created_at: string
-  updated_at: string
+export type PerformanceResponse = Omit<Tables<'performance_responses'>, 'response'> & { response: ResponseValue }
+
+function toPerformanceResponse(row: Tables<'performance_responses'>): PerformanceResponse {
+  const response: ResponseValue = row.response === 'yes' || row.response === 'maybe' ? row.response : 'no'
+  return { ...row, response }
 }
 
 const RESPONSE_SELECT =
@@ -44,7 +41,7 @@ export async function getMyPerformanceResponse(
     throw error
   }
 
-  return (data ?? null) as PerformanceResponse | null
+  return data ? toPerformanceResponse(data) : null
 }
 
 export async function listMyPerformanceResponses(
@@ -77,7 +74,7 @@ export async function listMyPerformanceResponses(
     throw error
   }
 
-  return (data ?? []) as PerformanceResponse[]
+  return (data ?? []).map(toPerformanceResponse)
 }
 
 export async function upsertMyPerformanceResponse(input: {
@@ -108,7 +105,7 @@ export async function upsertMyPerformanceResponse(input: {
         user_id: user.id,
         response: input.response,
         reason,
-      },
+      } satisfies FilledByTrigger<'performance_responses', 'band_id'> as TablesInsert<'performance_responses'>,
       {
         onConflict: 'performance_id,user_id',
       },
@@ -120,5 +117,5 @@ export async function upsertMyPerformanceResponse(input: {
     throw error
   }
 
-  return data as PerformanceResponse
+  return toPerformanceResponse(data)
 }

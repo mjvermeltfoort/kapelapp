@@ -18,6 +18,8 @@ import {
   setBandMemberRole,
   type BandMemberRecord,
 } from '../api/members'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../../bands/queryKeys'
 
 const roleOptions: Array<BandMembership['role']> = ['member', 'planner', 'admin', 'owner']
 
@@ -36,7 +38,7 @@ export function MembersPage() {
   )
 
   const membersQuery = useQuery({
-    queryKey: ['band-members', activeMembership?.band.id],
+    queryKey: bandKeys.members(activeMembership?.band.id),
     queryFn: async () => listBandMembers(activeMembership!.band.id),
     enabled: Boolean(canManageMembers && activeMembership?.band.id),
   })
@@ -55,7 +57,7 @@ export function MembersPage() {
       setMessage('Rol bijgewerkt.')
       await membersQuery.refetch()
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Rol wijzigen mislukt.')
+      setError(getErrorMessage(submitError, 'Rol wijzigen mislukt.'))
     } finally {
       setPendingKey(null)
     }
@@ -80,7 +82,7 @@ export function MembersPage() {
       setMessage('Lid gedeactiveerd.')
       await membersQuery.refetch()
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Deactiveren mislukt.')
+      setError(getErrorMessage(submitError, 'Deactiveren mislukt.'))
     } finally {
       setPendingKey(null)
     }
@@ -105,7 +107,7 @@ export function MembersPage() {
       setMessage('Lid definitief verwijderd uit kapel.')
       await membersQuery.refetch()
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Verwijderen mislukt.')
+      setError(getErrorMessage(submitError, 'Verwijderen mislukt.'))
     } finally {
       setPendingKey(null)
     }
@@ -124,7 +126,7 @@ export function MembersPage() {
       setMessage('Lid opnieuw geactiveerd.')
       await membersQuery.refetch()
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Heractiveren mislukt.')
+      setError(getErrorMessage(submitError, 'Heractiveren mislukt.'))
     } finally {
       setPendingKey(null)
     }
@@ -159,7 +161,7 @@ export function MembersPage() {
       </div>
 
       {membersQuery.isLoading ? <LoadingState>Leden worden geladen…</LoadingState> : null}
-      {membersQuery.error instanceof Error ? <Alert tone="error">{membersQuery.error.message}</Alert> : null}
+      {membersQuery.error ? <Alert tone="error">{getErrorMessage(membersQuery.error)}</Alert> : null}
       {message ? <Alert tone="success">{message}</Alert> : null}
       {error ? <Alert tone="error">{error}</Alert> : null}
 

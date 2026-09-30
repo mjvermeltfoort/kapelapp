@@ -7,6 +7,9 @@ import { getPerformanceResponseOverview, type Performance, type PerformanceOverv
 import { InstrumentCard } from './InstrumentCard'
 import { ResponseAccordion } from './ResponseAccordion'
 import { StatCard } from './StatCard'
+import { getErrorMessage } from '../../../lib/errors'
+import { performanceKeys } from '../queryKeys'
+import { parseDateOnly } from '../../../lib/dates'
 
 type PlannerOverviewModalProps = {
   performanceId: string
@@ -48,7 +51,7 @@ export function PlannerOverviewModal({
   const copyReminderTimeoutRef = useRef<number | null>(null)
 
   const overviewQuery = useQuery({
-    queryKey: ['performance-overview', performanceId],
+    queryKey: performanceKeys.overview(performanceId),
     queryFn: async () => getPerformanceResponseOverview(performanceId),
     enabled: isOpen && canViewOverview,
   })
@@ -64,7 +67,7 @@ export function PlannerOverviewModal({
       return `Iedereen heeft al gereageerd op ${overviewQuery.data.performance.title}.`
     }
 
-    return `Herinnering: reageer alsjeblieft op ${overviewQuery.data.performance.title} van ${new Date(
+    return `Herinnering: reageer alsjeblieft op ${overviewQuery.data.performance.title} van ${parseDateOnly(
       overviewQuery.data.performance.performance_date,
     ).toLocaleDateString('nl-NL')}. Nog geen reactie van: ${names}.`
   }, [overviewQuery.data])
@@ -333,8 +336,8 @@ export function PlannerOverviewModal({
           ) : null}
 
           {canViewOverview && overviewQuery.isLoading ? <LoadingState>Overzicht wordt geladen…</LoadingState> : null}
-          {canViewOverview && overviewQuery.error instanceof Error ? (
-            <Alert tone="error">{overviewQuery.error.message}</Alert>
+          {canViewOverview && overviewQuery.error ? (
+            <Alert tone="error">{getErrorMessage(overviewQuery.error)}</Alert>
           ) : null}
 
           {canViewOverview && overview ? (
@@ -476,7 +479,7 @@ export function PlannerOverviewModal({
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('nl-NL', {
+  return parseDateOnly(value).toLocaleDateString('nl-NL', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -12,6 +12,10 @@ import { getMyPerformanceResponse, upsertMyPerformanceResponse } from '../../res
 import { getPerformance } from '../api/performances'
 import { PlannerOverviewModal } from '../components/PlannerOverviewModal'
 import { PerformanceMessages } from '../components/PerformanceMessages'
+import { getErrorMessage } from '../../../lib/errors'
+import { performanceKeys } from '../queryKeys'
+import { responseKeys } from '../../responses/queryKeys'
+import { parseDateOnly } from '../../../lib/dates'
 
 export function PerformanceDetailPage() {
   const navigate = useNavigate()
@@ -24,13 +28,13 @@ export function PerformanceDetailPage() {
   const canViewPlannerOverview = Boolean(activeMembership)
 
   const performanceQuery = useQuery({
-    queryKey: ['performance', performanceId],
+    queryKey: performanceKeys.detail(performanceId),
     queryFn: async () => getPerformance(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
   })
 
   const responseQuery = useQuery({
-    queryKey: ['my-performance-response', performanceId],
+    queryKey: responseKeys.mine(performanceId),
     queryFn: async () => getMyPerformanceResponse(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
   })
@@ -55,7 +59,7 @@ export function PerformanceDetailPage() {
     return (
       <PageCard title="Optreden-detail" description="Optreden kon niet worden geladen." backTo="/performances">
         <Alert tone="error">
-          {performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}
+          {getErrorMessage(performanceQuery.error, 'Niet gevonden.')}
         </Alert>
       </PageCard>
     )
@@ -138,7 +142,7 @@ export function PerformanceDetailPage() {
 
         <PageCard title="Jouw reactie" description="Geef aan of je aanwezig bent. Bij misschien is een reden verplicht.">
           {responseQuery.isLoading ? <LoadingState>Reactie wordt geladen…</LoadingState> : null}
-          {responseQuery.error instanceof Error ? <Alert tone="error">{responseQuery.error.message}</Alert> : null}
+          {responseQuery.error ? <Alert tone="error">{getErrorMessage(responseQuery.error)}</Alert> : null}
 
           {!responseQuery.isLoading && !responseQuery.error ? (
             <PerformanceResponseForm
@@ -151,7 +155,8 @@ export function PerformanceDetailPage() {
                 })
                 await Promise.all([
                   responseQuery.refetch(),
-                  queryClient.invalidateQueries({ queryKey: ['my-performance-responses', activeMembership.band.id] }),
+                  queryClient.invalidateQueries({ queryKey: responseKeys.mineForBand(activeMembership.band.id) }),
+                  queryClient.invalidateQueries({ queryKey: performanceKeys.overview(performance.id) }),
                 ])
                 navigate('/performances', { replace: true })
               }}
@@ -182,7 +187,7 @@ export function PerformanceDetailPage() {
 }
 
 function formatLongDate(date: string) {
-  return new Date(date).toLocaleDateString('nl-NL', {
+  return parseDateOnly(date).toLocaleDateString('nl-NL', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

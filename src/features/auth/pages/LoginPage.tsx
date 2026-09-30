@@ -7,6 +7,7 @@ import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../hooks/useAuth'
 import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
+import { getErrorMessage } from '../../../lib/errors'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -38,7 +39,7 @@ export function LoginPage() {
     })
 
     if (authError) {
-      setError(authError.message)
+      setError(getErrorMessage(authError))
       setIsGoogleLoading(false)
       return
     }
@@ -64,7 +65,7 @@ export function LoginPage() {
     })
 
     if (otpError) {
-      setError(otpError.message)
+      setError(getErrorMessage(otpError))
       setIsOtpLoading(false)
       return
     }

@@ -10,33 +10,34 @@ export type Profile = {
   updated_at: string
 }
 
-export async function ensureProfile(user: User): Promise<Profile> {
+const PROFILE_COLUMNS = 'id, email, display_name, is_superadmin, created_at, updated_at'
+
+export async function ensureProfile(user: Pick<User, 'id' | 'email'>): Promise<Profile> {
   const email = user.email?.trim()
 
   if (!email) {
     throw new Error('Ingelogde gebruiker heeft geen e-mailadres.')
   }
 
-  const { error: upsertError } = await supabase.from('profiles').upsert(
-    {
-      id: user.id,
-      email,
-    },
-    {
-      onConflict: 'id',
-      ignoreDuplicates: false,
-    },
-  )
+  const { data: existing, error: selectError } = await supabase
+    .from('profiles')
+    .select(PROFILE_COLUMNS)
+    .eq('id', user.id)
+    .maybeSingle()
 
-  if (upsertError) {
-    throw upsertError
+  if (selectError) {
+    throw selectError
   }
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, email, display_name, is_superadmin, created_at, updated_at')
-    .eq('id', user.id)
-    .single()
+  if (existing && existing.email === email) {
+    return existing satisfies Profile
+  }
+
+  const query = existing
+    ? supabase.from('profiles').update({ email }).eq('id', user.id)
+    : supabase.from('profiles').insert({ id: user.id, email })
+
+  const { data, error } = await query.select(PROFILE_COLUMNS).single()
 
   if (error) {
     throw error
@@ -65,7 +66,7 @@ export async function updateMyProfile(input: { displayName: string }): Promise<P
     .from('profiles')
     .update({ display_name: displayName })
     .eq('id', user.id)
-    .select('id, email, display_name, is_superadmin, created_at, updated_at')
+    .select(PROFILE_COLUMNS)
     .single()
 
   if (error) {

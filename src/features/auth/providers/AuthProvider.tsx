@@ -1,7 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { type PropsWithChildren, createContext, useEffect, useMemo, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client'
 import { ensureProfile, type Profile, updateMyProfile } from '../../profile/api/profiles'
+import { clearStoredActiveBandId } from '../../bands/providers/activeBandStorage'
 
 type AuthContextValue = {
   isConfigured: boolean
@@ -17,79 +19,33 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const [isSessionKnown, setIsSessionKnown] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profileState, setProfileState] = useState<{ userId: string; profile: Profile | null } | null>(null)
+  const user = session?.user ?? null
+  const userId = user?.id ?? null
+  const userEmail = user?.email
 
   useEffect(() => {
     let isMounted = true
 
-    async function bootstrap() {
-      try {
-        const { data } = await supabase.auth.getSession()
-
-        if (!isMounted) {
-          return
-        }
-
+    void supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) {
         setSession(data.session)
-
-        if (!data.session?.user) {
-          setProfile(null)
-          return
-        }
-
-        const nextProfile = await ensureProfile(data.session.user)
-
-        if (!isMounted) {
-          return
-        }
-
-        setProfile(nextProfile)
-      } catch (error) {
-        console.error('Auth bootstrap failed', error)
-        if (isMounted) {
-          setProfile(null)
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        setIsSessionKnown(true)
       }
-    }
-
-    void bootstrap()
+    })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession)
+      setIsSessionKnown(true)
 
-      if (!nextSession?.user) {
-        setProfile(null)
-        setIsLoading(false)
-        return
-      }
-
-      setIsLoading(true)
-
-      try {
-        const nextProfile = await ensureProfile(nextSession.user)
-
-        if (!isMounted) {
-          return
-        }
-
-        setProfile(nextProfile)
-      } catch (error) {
-        console.error('Profile sync failed', error)
-        if (isMounted) {
-          setProfile(null)
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+      if (event === 'SIGNED_OUT') {
+        queryClient.clear()
+        clearStoredActiveBandId()
       }
     })
 
@@ -97,34 +53,63 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [])
+  }, [queryClient])
+
+  useEffect(() => {
+    if (!userId) {
+      return
+    }
+
+    let isCancelled = false
+
+    ensureProfile({ id: userId, email: userEmail })
+      .then((profile) => {
+        if (!isCancelled) {
+          setProfileState({ userId, profile })
+        }
+      })
+      .catch((error: unknown) => {
+        console.error('Profile sync failed', error)
+        if (!isCancelled) {
+          setProfileState({ userId, profile: null })
+        }
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [userId, userEmail])
+
+  const profile = profileState && profileState.userId === userId ? profileState.profile : null
+  const isLoading = !isSessionKnown || (Boolean(userId) && profileState?.userId !== userId)
 
   const value = useMemo<AuthContextValue>(
     () => ({
       isConfigured: isSupabaseConfigured,
       isLoading,
       session,
-      user: session?.user ?? null,
+      user,
       profile,
       refreshProfile: async () => {
-        if (!session?.user) {
-          setProfile(null)
+        if (!user) {
           return
         }
 
-        const nextProfile = await ensureProfile(session.user)
-        setProfile(nextProfile)
+        const nextProfile = await ensureProfile(user)
+        setProfileState({ userId: user.id, profile: nextProfile })
       },
       saveProfile: async ({ displayName }) => {
         const nextProfile = await updateMyProfile({ displayName })
-        setProfile(nextProfile)
+        setProfileState({ userId: nextProfile.id, profile: nextProfile })
         return nextProfile
       },
       signOut: async () => {
         await supabase.auth.signOut()
+        queryClient.clear()
+        clearStoredActiveBandId()
       },
     }),
-    [isLoading, profile, session],
+    [isLoading, profile, queryClient, session, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

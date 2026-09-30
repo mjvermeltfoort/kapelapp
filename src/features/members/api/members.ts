@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabase/client'
 import type { BandMembership } from '../../bands/api/bands'
+import { toBandRole } from '../../../lib/supabase/types'
 
 export type BandMemberRecord = {
   membership_id: string
@@ -24,7 +25,7 @@ export async function listBandMembers(bandId: string): Promise<BandMemberRecord[
     throw error
   }
 
-  return (data ?? []) as BandMemberRecord[]
+  return (data ?? []).map((row) => ({ ...row, role: toBandRole(row.role) }))
 }
 
 export async function setBandMemberRole(input: {

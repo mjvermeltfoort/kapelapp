@@ -9,6 +9,8 @@ import {
   deletePerformanceMessage,
   listPerformanceMessages,
 } from '../api/messages'
+import { getErrorMessage } from '../../../lib/errors'
+import { performanceKeys } from '../queryKeys'
 
 type PerformanceMessagesProps = {
   performanceId: string
@@ -24,12 +26,12 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
 
   const messagesQuery = useQuery({
-    queryKey: ['performance-messages', performanceId],
+    queryKey: performanceKeys.messages(performanceId),
     queryFn: async () => listPerformanceMessages(performanceId),
   })
 
   async function refreshMessages() {
-    await queryClient.invalidateQueries({ queryKey: ['performance-messages', performanceId] })
+    await queryClient.invalidateQueries({ queryKey: performanceKeys.messages(performanceId) })
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -48,7 +50,7 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
       setBody('')
       await refreshMessages()
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Bericht plaatsen mislukt.')
+      setSubmitError(getErrorMessage(error, 'Bericht plaatsen mislukt.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -61,7 +63,7 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
       await deletePerformanceMessage(messageId)
       await refreshMessages()
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Bericht verwijderen mislukt.')
+      setSubmitError(getErrorMessage(error, 'Bericht verwijderen mislukt.'))
     } finally {
       setDeletingMessageId(null)
     }
@@ -74,7 +76,7 @@ export function PerformanceMessages({ performanceId, userId, canModerate }: Perf
       </div>
 
       {messagesQuery.isLoading ? <LoadingState>Berichten worden geladen…</LoadingState> : null}
-      {messagesQuery.error instanceof Error ? <Alert tone="error">{messagesQuery.error.message}</Alert> : null}
+      {messagesQuery.error ? <Alert tone="error">{getErrorMessage(messagesQuery.error)}</Alert> : null}
 
       {!messagesQuery.isLoading && !messagesQuery.error ? (
         messagesQuery.data?.length ? (

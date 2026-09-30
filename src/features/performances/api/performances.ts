@@ -1,26 +1,15 @@
 import { supabase } from '../../../lib/supabase/client'
+import type { Tables } from '../../../lib/supabase/database.types'
 
 export type PerformanceStatus = 'draft' | 'published' | 'cancelled' | 'completed' | 'archived'
 
-export type Performance = {
-  id: string
-  band_id: string
-  title: string
-  description: string | null
-  performance_date: string
-  start_time: string
-  end_time: string | null
-  gather_time: string | null
-  location: string
-  map_url: string | null
-  response_deadline: string | null
-  status: PerformanceStatus
-  cancelled_at: string | null
-  archived_at: string | null
-  created_by: string
-  updated_by: string
-  created_at: string
-  updated_at: string
+export type Performance = Omit<Tables<'performances'>, 'status'> & { status: PerformanceStatus }
+
+const PERFORMANCE_STATUSES: readonly string[] = ['draft', 'published', 'cancelled', 'completed', 'archived']
+
+function toPerformance(row: Tables<'performances'>): Performance {
+  const status = PERFORMANCE_STATUSES.includes(row.status) ? (row.status as PerformanceStatus) : 'draft'
+  return { ...row, status }
 }
 
 export type PerformanceInput = {
@@ -88,7 +77,7 @@ export async function listBandPerformances(bandId: string): Promise<Performance[
     throw error
   }
 
-  return (data ?? []) as Performance[]
+  return (data ?? []).map(toPerformance)
 }
 
 export async function getPerformance(performanceId: string): Promise<Performance> {
@@ -102,7 +91,7 @@ export async function getPerformance(performanceId: string): Promise<Performance
     throw error
   }
 
-  return data as Performance
+  return toPerformance(data)
 }
 
 export async function createPerformance(input: PerformanceInput): Promise<Performance> {
@@ -140,7 +129,7 @@ export async function createPerformance(input: PerformanceInput): Promise<Perfor
     throw error
   }
 
-  return data as Performance
+  return toPerformance(data)
 }
 
 export async function updatePerformance(
@@ -180,7 +169,7 @@ export async function updatePerformance(
     throw error
   }
 
-  return data as Performance
+  return toPerformance(data)
 }
 
 export async function deletePerformance(performanceId: string): Promise<void> {

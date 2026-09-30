@@ -13,6 +13,9 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
 import { listMyPerformanceResponses } from '../../responses/api/responses'
 import { listBandPerformances } from '../api/performances'
+import { getErrorMessage } from '../../../lib/errors'
+import { performanceKeys } from '../queryKeys'
+import { responseKeys } from '../../responses/queryKeys'
 
 export function PerformancesPage() {
   const { profile } = useAuth()
@@ -21,7 +24,7 @@ export function PerformancesPage() {
   const [visibleCount, setVisibleCount] = useState(3)
 
   const performancesQuery = useQuery({
-    queryKey: ['performances', activeMembership?.band.id],
+    queryKey: performanceKeys.list(activeMembership?.band.id),
     queryFn: async () => listBandPerformances(activeMembership!.band.id),
     enabled: Boolean(activeMembership?.band.id),
   })
@@ -32,7 +35,7 @@ export function PerformancesPage() {
   )
 
   const responsesQuery = useQuery({
-    queryKey: ['my-performance-responses', activeMembership?.band.id, performanceIds.join(',')],
+    queryKey: responseKeys.mineForPerformances(activeMembership?.band.id, performanceIds),
     queryFn: async () => listMyPerformanceResponses(performanceIds),
     enabled: Boolean(activeMembership?.band.id && performanceIds.length),
   })
@@ -70,11 +73,11 @@ export function PerformancesPage() {
         {responsesQuery.isLoading && performancesQuery.data?.length ? (
           <LoadingState>Jouw reacties worden bijgewerkt…</LoadingState>
         ) : null}
-        {performancesQuery.error instanceof Error ? (
-          <Alert tone="error">{performancesQuery.error.message}</Alert>
+        {performancesQuery.error ? (
+          <Alert tone="error">{getErrorMessage(performancesQuery.error)}</Alert>
         ) : null}
-        {responsesQuery.error instanceof Error ? (
-          <Alert tone="error">{responsesQuery.error.message}</Alert>
+        {responsesQuery.error ? (
+          <Alert tone="error">{getErrorMessage(responsesQuery.error)}</Alert>
         ) : null}
 
         {!performancesQuery.isLoading && !performancesQuery.data?.length ? (

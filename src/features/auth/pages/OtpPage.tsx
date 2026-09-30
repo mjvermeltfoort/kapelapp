@@ -6,6 +6,7 @@ import { FormField, Input } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
 import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
+import { getErrorMessage } from '../../../lib/errors'
 
 export function OtpPage() {
   const navigate = useNavigate()
@@ -37,7 +38,7 @@ export function OtpPage() {
     })
 
     if (verifyError) {
-      setError(verifyError.message)
+      setError(getErrorMessage(verifyError))
       setIsSubmitting(false)
       return
     }
@@ -63,7 +64,7 @@ export function OtpPage() {
     })
 
     if (resendError) {
-      setError(resendError.message)
+      setError(getErrorMessage(resendError))
       setIsResending(false)
       return
     }

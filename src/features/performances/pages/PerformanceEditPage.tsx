@@ -8,6 +8,8 @@ import { PageCard } from '../../../components/PageCard'
 import { useBand } from '../../bands/hooks/useBand'
 import { deletePerformance, getPerformance, updatePerformance } from '../api/performances'
 import { PerformanceForm } from '../components/PerformanceForm'
+import { getErrorMessage } from '../../../lib/errors'
+import { performanceKeys } from '../queryKeys'
 
 export function PerformanceEditPage() {
   const navigate = useNavigate()
@@ -20,7 +22,7 @@ export function PerformanceEditPage() {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 
   const performanceQuery = useQuery({
-    queryKey: ['performance', performanceId],
+    queryKey: performanceKeys.detail(performanceId),
     queryFn: async () => getPerformance(performanceId ?? ''),
     enabled: Boolean(performanceId && activeMembership?.band.id),
   })
@@ -53,7 +55,7 @@ export function PerformanceEditPage() {
     return (
       <PageCard title="Optreden wijzigen" description="Optreden kon niet worden geladen." backTo="/performances">
         <Alert tone="error">
-          {performanceQuery.error instanceof Error ? performanceQuery.error.message : 'Niet gevonden.'}
+          {getErrorMessage(performanceQuery.error, 'Niet gevonden.')}
         </Alert>
       </PageCard>
     )
@@ -67,10 +69,10 @@ export function PerformanceEditPage() {
 
     try {
       await deletePerformance(performance.id)
-      await queryClient.invalidateQueries({ queryKey: ['performances', activeMembership!.band.id] })
+      await queryClient.invalidateQueries({ queryKey: performanceKeys.list(activeMembership!.band.id) })
       await navigate('/performances', { replace: true })
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : 'Verwijderen mislukt.')
+      setDeleteError(getErrorMessage(error, 'Verwijderen mislukt.'))
       setIsDeleting(false)
     }
   }
@@ -99,8 +101,8 @@ export function PerformanceEditPage() {
             bandId: performance.band_id,
             ...values,
           })
-          await queryClient.invalidateQueries({ queryKey: ['performances', activeMembership.band.id] })
-          await queryClient.invalidateQueries({ queryKey: ['performance', performance.id] })
+          await queryClient.invalidateQueries({ queryKey: performanceKeys.list(activeMembership.band.id) })
+          await queryClient.invalidateQueries({ queryKey: performanceKeys.detail(performance.id) })
           navigate(`/performances/${performance.id}`, { replace: true })
         }}
       />

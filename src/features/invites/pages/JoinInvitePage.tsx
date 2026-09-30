@@ -5,6 +5,8 @@ import { PageCard } from '../../../components/PageCard'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useBand } from '../../bands/hooks/useBand'
 import { acceptBandInvite, getJoinInvitePreview } from '../api/invites'
+import { getErrorMessage } from '../../../lib/errors'
+import { bandKeys } from '../../bands/queryKeys'
 
 export function JoinInvitePage() {
   const navigate = useNavigate()
@@ -16,7 +18,7 @@ export function JoinInvitePage() {
   const [isAccepting, setIsAccepting] = useState(false)
 
   const previewQuery = useQuery({
-    queryKey: ['join-invite-preview', token],
+    queryKey: bandKeys.invitePreview(token),
     queryFn: async () => getJoinInvitePreview(token ?? ''),
     enabled: Boolean(token),
   })
@@ -47,7 +49,7 @@ export function JoinInvitePage() {
       navigate('/bands', { replace: true })
     } catch (submitError) {
       setError(
-        submitError instanceof Error ? submitError.message : 'Uitnodiging accepteren mislukt.',
+        getErrorMessage(submitError, 'Uitnodiging accepteren mislukt.'),
       )
     } finally {
       setIsAccepting(false)
@@ -62,7 +64,7 @@ export function JoinInvitePage() {
         backTo="/login"
       >
         {previewQuery.isLoading ? <p>Uitnodiging wordt gecontroleerd…</p> : null}
-        {previewQuery.error instanceof Error ? <p role="alert">{previewQuery.error.message}</p> : null}
+        {previewQuery.error ? <p role="alert">{getErrorMessage(previewQuery.error)}</p> : null}
 
         {previewQuery.data ? (
           <>

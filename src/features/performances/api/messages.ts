@@ -1,14 +1,8 @@
 import { supabase } from '../../../lib/supabase/client'
+import type { Tables, TablesInsert } from '../../../lib/supabase/database.types'
+import type { FilledByTrigger } from '../../../lib/supabase/types'
 
-export type PerformanceMessage = {
-  id: string
-  performance_id: string
-  band_id: string
-  user_id: string
-  author_name: string
-  body: string
-  created_at: string
-}
+export type PerformanceMessage = Tables<'performance_messages'>
 
 const PERFORMANCE_MESSAGE_SELECT =
   'id, performance_id, band_id, user_id, author_name, body, created_at'
@@ -25,7 +19,7 @@ export async function listPerformanceMessages(performanceId: string): Promise<Pe
     throw error
   }
 
-  return (data ?? []) as PerformanceMessage[]
+  return data ?? []
 }
 
 export async function createPerformanceMessage(input: {
@@ -51,7 +45,7 @@ export async function createPerformanceMessage(input: {
       performance_id: input.performanceId,
       user_id: user.id,
       body: input.body.trim(),
-    })
+    } satisfies FilledByTrigger<'performance_messages', 'band_id' | 'author_name'> as TablesInsert<'performance_messages'>)
     .select(PERFORMANCE_MESSAGE_SELECT)
     .single()
 
@@ -59,7 +53,7 @@ export async function createPerformanceMessage(input: {
     throw error
   }
 
-  return data as PerformanceMessage
+  return data
 }
 
 export async function deletePerformanceMessage(messageId: string): Promise<void> {

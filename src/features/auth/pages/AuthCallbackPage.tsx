@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageCard } from '../../../components/PageCard'
 import { sanitizeRedirectTarget } from '../../../lib/redirect'
 import { supabase } from '../../../lib/supabase/client'
+import { getErrorMessage } from '../../../lib/errors'
 
 export function AuthCallbackPage() {
   const navigate = useNavigate()
@@ -14,7 +15,7 @@ export function AuthCallbackPage() {
 
     void supabase.auth.getSession().then(({ error: sessionError }) => {
       if (sessionError) {
-        setError(sessionError.message)
+        setError(getErrorMessage(sessionError))
         return
       }
 
