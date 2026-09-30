@@ -1,4 +1,5 @@
 import { LoadingState } from './LoadingState'
+import './SplashScreen.css'
 
 export function SplashScreen({ message = 'Kapel App wordt geladen…' }: { message?: string }) {
   return (

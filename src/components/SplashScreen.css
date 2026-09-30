@@ -1,0 +1,17 @@
+.splash-screen {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.splash-screen__logo {
+  width: 5rem;
+  height: 5rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}

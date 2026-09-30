@@ -10,6 +10,7 @@ import { StatCard } from './StatCard'
 import { getErrorMessage } from '../../../lib/errors'
 import { performanceKeys } from '../queryKeys'
 import { parseDateOnly } from '../../../lib/dates'
+import './PlannerOverviewModal.css'
 
 type PlannerOverviewModalProps = {
   performanceId: string
