@@ -418,3 +418,9 @@
     transform: none;
   }
 }
+
+.install-banner__icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+}

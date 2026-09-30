@@ -31,7 +31,10 @@ vi.mock('../../features/bands/hooks/useBand', () => ({
 
 vi.mock('../../lib/installPrompt', () => ({
   clearInstallPrompt: vi.fn(),
+  dismissIOSInstall: vi.fn(),
   getInstallPrompt: () => null,
+  hasIOSInstallBeenDismissed: () => true,
+  isIOSSafari: () => false,
 }))
 
 beforeEach(() => {
@@ -85,5 +88,34 @@ describe('AppLayout band menu', () => {
     fireEvent.pointerDown(document.body)
 
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  })
+})
+
+describe('AppLayout navigation', () => {
+  it('shows performances and profile once for members, without admin links', () => {
+    render(
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>,
+    )
+
+    const navigation = screen.getByRole('navigation', { name: 'Hoofdnavigatie' })
+
+    expect(navigation).toHaveTextContent('Optredens')
+    expect(navigation).toHaveTextContent('Profiel')
+    expect(navigation).not.toHaveTextContent('Beheer')
+    expect(screen.getAllByRole('link', { name: 'Profiel' })).toHaveLength(1)
+  })
+
+  it('shows Dutch role labels in the band menu', () => {
+    render(
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /actieve kapel: de kneuterkapel/i }))
+
+    expect(screen.getByRole('button', { name: 'Kies kapel De Kneuterkapel' })).toHaveTextContent('Lid')
   })
 })

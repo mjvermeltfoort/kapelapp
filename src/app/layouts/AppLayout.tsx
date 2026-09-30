@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { clearInstallPrompt, dismissIOSInstall, getInstallPrompt, hasIOSInstallBeenDismissed, isIOSSafari } from '../../lib/installPrompt'
-import { canManagePerformances as canManage } from '../../lib/roles'
+import { formatRoleLabel, isAdminRole } from '../../lib/roles'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useBand } from '../../features/bands/hooks/useBand'
 import './AppLayout.css'
@@ -27,7 +27,7 @@ export function AppLayout() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { activeMembership, memberships, setActiveBandId } = useBand()
-  const canManageBand = profile?.is_superadmin || ['admin', 'owner'].includes(activeMembership?.role ?? '')
+  const canManageBand = Boolean(profile?.is_superadmin) || isAdminRole(activeMembership?.role)
   const brandMenuRef = useRef<HTMLDivElement>(null)
   const brandTriggerRef = useRef<HTMLButtonElement>(null)
   const [isBandMenuOpen, setIsBandMenuOpen] = useState(false)
@@ -37,14 +37,13 @@ export function AppLayout() {
   const [showIOSBanner, setShowIOSBanner] = useState(false)
 
   const navigation = useMemo(() => {
-    const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'bands' | 'admin' | 'profile' }>
+    const items = [] as Array<{ to: string; label: string; icon: 'performances' | 'admin' | 'profile' }>
 
     if (activeMembership) {
       items.push({ to: '/performances', label: 'Optredens', icon: 'performances' })
     }
 
     if (canManageBand) {
-      items.push({ to: '/bands', label: 'Kapel', icon: 'bands' })
       items.push({ to: '/admin?tab=band', label: 'Beheer', icon: 'admin' })
     }
 
@@ -52,8 +51,6 @@ export function AppLayout() {
 
     return items
   }, [activeMembership, canManageBand])
-
-  const showCreatePerformanceAction = location.pathname === '/performances' && canManage(activeMembership?.role)
 
   useEffect(() => {
     const standalone = isStandaloneMode()
@@ -183,7 +180,8 @@ export function AppLayout() {
         <div className="app-shell__top">
           <div className="install-banner" role="region" aria-label="App installeren op iOS">
             <span className="install-banner__text">
-              Installeer: tik op <strong>⎙</strong> en kies <strong>Zet op beginscherm</strong>.
+              Installeer: tik op <Icon name="share" className="install-banner__icon" />{' '}
+              <span className="sr-only">Deel</span> en kies <strong>Zet op beginscherm</strong>.
             </span>
             <button
               type="button"
@@ -207,7 +205,7 @@ export function AppLayout() {
                 className={isBandMenuOpen ? 'brand-trigger brand-trigger--open' : 'brand-trigger'}
                 onClick={() => setIsBandMenuOpen((current) => !current)}
                 aria-expanded={isBandMenuOpen}
-                aria-haspopup="menu"
+                aria-controls="band-menu-panel"
                 aria-label={
                   activeMembership
                     ? `Actieve kapel: ${activeMembership.band.name}. Open kapelmenu`
@@ -224,7 +222,7 @@ export function AppLayout() {
               </button>
 
               {isBandMenuOpen ? (
-                <div className="brand-panel" role="menu" aria-label="Kapelmenu">
+                <div id="band-menu-panel" className="brand-panel" role="region" aria-label="Kapelmenu">
                   <div className="brand-panel__section">
                     {memberships.map((membership) => (
                       <button
@@ -237,40 +235,24 @@ export function AppLayout() {
                         }
                         onClick={() => handleBandSelect(membership.band_id)}
                         aria-label={`Kies kapel ${membership.band.name}`}
+                        aria-current={membership.band_id === activeMembership?.band_id ? 'true' : undefined}
                       >
                         <strong>{membership.band.name}</strong>
-                        <span>{membership.role}</span>
+                        <span>{formatRoleLabel(membership.role)}</span>
                       </button>
                     ))}
                   </div>
 
-                  {canManageBand ? (
-                    <div className="brand-panel__footer">
-                      <Link to="/bands" className="brand-panel__link" onClick={() => setIsBandMenuOpen(false)}>
-                        Kapellen beheren
-                      </Link>
-                    </div>
-                  ) : null}
+                  <div className="brand-panel__footer">
+                    <Link to="/bands" className="brand-panel__link" onClick={() => setIsBandMenuOpen(false)}>
+                      Mijn kapellen
+                    </Link>
+                  </div>
                 </div>
               ) : null}
             </div>
           </div>
 
-          <div className="user-block">
-            {showCreatePerformanceAction ? (
-              <Link
-                to="/performances/new"
-                className="nav-icon-link nav-icon-link--primary"
-                aria-label="Nieuw optreden"
-                title="Nieuw optreden"
-              >
-                <Icon name="add" className="nav-icon" />
-              </Link>
-            ) : null}
-            <Link to="/profile" className="nav-icon-link" aria-label="Profiel" title="Profiel">
-              <Icon name="profile" className="nav-icon" />
-            </Link>
-          </div>
         </header>
       </div>
 

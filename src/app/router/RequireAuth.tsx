@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { type PropsWithChildren } from 'react'
+import { SplashScreen } from '../../components/SplashScreen'
 import { sanitizeRedirectTarget } from '../../lib/redirect'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 
@@ -8,7 +9,7 @@ export function RequireAuth({ children }: PropsWithChildren) {
   const { isLoading, profile, user } = useAuth()
 
   if (isLoading) {
-    return <p>Session wordt hersteld…</p>
+    return <SplashScreen message="Sessie wordt hersteld…" />
   }
 
   if (!user) {

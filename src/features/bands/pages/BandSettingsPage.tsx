@@ -5,7 +5,7 @@ import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { FormField, Input, Textarea } from '../../../components/FormField'
 import { PageCard } from '../../../components/PageCard'
-import { isAdminRole } from '../../../lib/roles'
+import { isAdminRole, formatRoleLabel } from '../../../lib/roles'
 import { getCurrentBandInvite, regenerateBandInvite } from '../../invites/api/invites'
 import { listBandMembers } from '../../members/api/members'
 import { createBandInstrument, deactivateBandInstrument, listBandInstruments, updateBandInstrument } from '../api/instruments'
@@ -239,12 +239,12 @@ export function BandSettingsPage() {
   return (
     <PageCard title="Kapelinstellingen" description="Pas naam, uitleg en zichtbaarheid van reacties aan." backTo="/performances">
       <div className="band-settings-header">
-        <Badge tone={canManageBand ? 'brand' : 'neutral'}>{activeMembership.role}</Badge>
+        <Badge tone={canManageBand ? 'brand' : 'neutral'}>{formatRoleLabel(activeMembership.role)}</Badge>
         <p className="muted-text">Actieve kapel: {activeMembership.band.name}</p>
       </div>
 
       {!canManageBand ? (
-        <Alert tone="info">Alleen admins en owners kunnen kapelinstellingen wijzigen.</Alert>
+        <Alert tone="info">Alleen beheerders en eigenaren kunnen kapelinstellingen wijzigen.</Alert>
       ) : null}
 
       <form onSubmit={(event) => void handleSettingsSubmit(event)} className="performance-form">

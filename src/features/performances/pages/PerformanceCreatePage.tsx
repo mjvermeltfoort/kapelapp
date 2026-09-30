@@ -36,7 +36,7 @@ export function PerformanceCreatePage() {
 
   if (!canManagePerformances) {
     return (
-      <PageCard title="Optreden aanmaken" description="Alleen planners, admins en owners kunnen optredens beheren." backTo="/performances">
+      <PageCard title="Optreden aanmaken" description="Alleen planners, beheerders en eigenaren kunnen optredens beheren." backTo="/performances">
         <p>Je huidige rol heeft geen toegang tot dit scherm.</p>
       </PageCard>
     )

@@ -20,6 +20,7 @@ import {
 } from '../api/members'
 import { getErrorMessage } from '../../../lib/errors'
 import { bandKeys } from '../../bands/queryKeys'
+import { formatRoleLabel } from '../../../lib/roles'
 
 const roleOptions: Array<BandMembership['role']> = ['member', 'planner', 'admin', 'owner']
 
@@ -298,17 +299,4 @@ export function MembersPage() {
       </div>
     </PageCard>
   )
-}
-
-function formatRoleLabel(role: BandMembership['role']) {
-  switch (role) {
-    case 'member':
-      return 'Lid'
-    case 'planner':
-      return 'Planner'
-    case 'admin':
-      return 'Admin'
-    case 'owner':
-      return 'Eigenaar'
-  }
 }

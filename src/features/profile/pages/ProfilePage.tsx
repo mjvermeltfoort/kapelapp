@@ -11,6 +11,7 @@ import { listBandInstruments } from '../../bands/api/instruments'
 import { useBand } from '../../bands/hooks/useBand'
 import { getErrorMessage } from '../../../lib/errors'
 import { bandKeys } from '../../bands/queryKeys'
+import { formatRoleLabel } from '../../../lib/roles'
 
 export function ProfilePage() {
   const { profile, saveProfile, signOut, user } = useAuth()
@@ -260,17 +261,4 @@ export function ProfilePage() {
       </PageCard>
     </div>
   )
-}
-
-function formatRoleLabel(role: 'member' | 'planner' | 'admin' | 'owner') {
-  switch (role) {
-    case 'member':
-      return 'Lid'
-    case 'planner':
-      return 'Planner'
-    case 'admin':
-      return 'Admin'
-    case 'owner':
-      return 'Eigenaar'
-  }
 }

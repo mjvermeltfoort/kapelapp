@@ -332,7 +332,7 @@ export function PlannerOverviewModal({
           </header>
 
           {!canViewOverview ? (
-            <Alert tone="error">Alleen planners, admins en owners hebben toegang.</Alert>
+            <Alert tone="error">Alleen planners, beheerders en eigenaren hebben toegang.</Alert>
           ) : null}
 
           {canViewOverview && overviewQuery.isLoading ? <LoadingState>Overzicht wordt geladen…</LoadingState> : null}
